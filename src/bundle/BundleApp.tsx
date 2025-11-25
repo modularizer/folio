@@ -16,9 +16,10 @@ import { usePathname, useSegments } from 'expo-router';
 import HomeScreen from '../../app/index';
 import ProjectDetailScreen from '../../app/[project]/index';
 import GitHubUserRoute from '../../app/github/[username]';
+import { UsernameInput } from '@/components/UsernameInput';
 
 export interface BundleAppProps {
-  githubUsername: string;
+  githubUsername?: string;
   githubToken?: string;
   theme?: Partial<Theme>;
 }
@@ -64,6 +65,9 @@ function AppRouter() {
 }
 
 export function BundleApp({ githubUsername, githubToken, theme }: BundleAppProps) {
+  const pathname = usePathname();
+  const segments = useSegments();
+
   // Store config in window BEFORE rendering (synchronously)
   // This must happen before any child components try to read it
   if (typeof window !== 'undefined') {
@@ -86,6 +90,34 @@ export function BundleApp({ githubUsername, githubToken, theme }: BundleAppProps
       });
     };
   }, []);
+
+  // Check if we're on a route that requires a username (/@username or /github/username)
+  const hasUsernameInRoute = (
+    (segments.length >= 1 && segments[0].startsWith('@')) ||
+    (segments.length >= 2 && segments[0] === 'github')
+  );
+
+  console.log('[BundleApp] Render decision:', { 
+    githubUsername, 
+    pathname, 
+    segments, 
+    hasUsernameInRoute,
+    shouldShowInput: !githubUsername && !hasUsernameInRoute
+  });
+
+  // If no username provided and not navigating to a specific user, show username input screen
+  if (!githubUsername && !hasUsernameInRoute) {
+    console.log('[BundleApp] Showing UsernameInput');
+    return (
+      <ThemeProvider>
+        <View style={styles.container}>
+          <UsernameInput />
+        </View>
+      </ThemeProvider>
+    );
+  }
+
+  console.log('[BundleApp] Showing AppRouter');
 
   // Use the same providers as app/_layout.tsx
   return (

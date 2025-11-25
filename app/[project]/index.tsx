@@ -90,7 +90,9 @@ export default function ProjectDetailScreen() {
   }
 
   const handleBack = () => {
-    router.push('/');
+    // Use relative navigation to go back to parent directory
+    // This works whether we're at /:project or /@username/:project
+    router.push('../');
   };
 
   // Use the project's builder to render the detail page

@@ -110,6 +110,31 @@ function getConfigFromScript(): ScriptConfig {
 }
 
 /**
+ * Extract GitHub username from GitHub Pages subdomain
+ * e.g. modularizer.github.io => "modularizer"
+ */
+function getUsernameFromGitHubPages(): string | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const hostname = window.location.hostname;
+  
+  // Check if we're on GitHub Pages (username.github.io)
+  const githubPagesMatch = hostname.match(/^([^\.]+)\.github\.io$/);
+  if (githubPagesMatch && githubPagesMatch[1]) {
+    const username = githubPagesMatch[1];
+    // Exclude common non-username subdomains
+    if (username !== 'www' && username !== 'pages' && username.length > 0) {
+      console.log('[Folio] Detected GitHub Pages username:', username);
+      return username;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Initialize Folio portfolio in the specified container
  */
 export function init(config: FolioConfig): void {
@@ -125,8 +150,11 @@ export function init(config: FolioConfig): void {
   // Auto-detect config from script tag
   const scriptConfig = getConfigFromScript();
 
-  // Merge configs (explicit config takes priority)
-  const githubUsername = config.githubUsername || scriptConfig.username;
+  // Try to get username from GitHub Pages subdomain if not provided
+  const githubPagesUsername = getUsernameFromGitHubPages();
+
+  // Merge configs (explicit config takes priority, then script config, then GitHub Pages subdomain)
+  const githubUsername = config.githubUsername || scriptConfig.username || githubPagesUsername;
   const githubToken = config.githubToken || scriptConfig.token;
 
   // Build theme from script params and config
@@ -147,13 +175,7 @@ export function init(config: FolioConfig): void {
     }
   }
 
-  // Validate GitHub username
-  if (!githubUsername) {
-    throw new Error('Folio: githubUsername is required. Provide it via:\n' +
-      '  - config.githubUsername\n' +
-      '  - data-github-username attribute\n' +
-      '  - ?username=x or ?github=x query param');
-  }
+  // GitHub username is optional - if not provided, show username input screen
 
   // Cleanup previous instance if exists
   if (rootInstance) {

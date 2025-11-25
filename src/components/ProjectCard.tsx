@@ -26,7 +26,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   }, [project.data]);
 
   const handlePress = useCallback(() => {
-    router.push(`/${slug}`);
+    // Use relative navigation - append to current path
+    router.push(`./${slug}`);
   }, [slug, router]);
 
   // Memoize the card to prevent re-renders when props haven't changed

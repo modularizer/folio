@@ -35,13 +35,61 @@ export function useRouter() {
   }, []);
 
   const navigate = (path: string, searchParams?: Record<string, string>) => {
-    let url = path;
-    if (searchParams && Object.keys(searchParams).length > 0) {
-      const params = new URLSearchParams(searchParams);
-      url = `${path}?${params.toString()}`;
+    // Resolve relative paths
+    let resolvedPath = path;
+    
+    if (!path.startsWith('/') && !path.startsWith('http')) {
+      // Relative path - resolve it based on current location
+      const currentPath = window.location.pathname;
+      const currentParts = currentPath.split('/').filter(p => p);
+      
+      if (path.startsWith('./')) {
+        // Same directory: ./:project
+        // Remove the ./ prefix
+        const relativePart = path.slice(2);
+        
+        // If we're at a "file" (last segment doesn't have children), replace it
+        // Otherwise append to the current path
+        // For simplicity, we'll check if we're on a detail route (2+ segments)
+        if (currentParts.length >= 2) {
+          // Replace last segment: /@username/oldproject -> /@username/newproject
+          resolvedPath = '/' + currentParts.slice(0, -1).concat(relativePart).join('/');
+        } else {
+          // Append to current: /@username -> /@username/project
+          resolvedPath = '/' + currentParts.concat(relativePart).join('/');
+        }
+      } else if (path.startsWith('../')) {
+        // Parent directory: ../ or ../@:username
+        let pathToResolve = path;
+        let parts = [...currentParts];
+        
+        while (pathToResolve.startsWith('../')) {
+          parts.pop(); // Go up one level
+          pathToResolve = pathToResolve.slice(3);
+        }
+        
+        if (pathToResolve) {
+          parts.push(pathToResolve);
+        }
+        
+        resolvedPath = '/' + parts.join('/');
+      } else {
+        // No prefix - treat as relative to current directory (same as ./)
+        if (currentParts.length >= 2) {
+          resolvedPath = '/' + currentParts.slice(0, -1).concat(path).join('/');
+        } else {
+          resolvedPath = '/' + currentParts.concat(path).join('/');
+        }
+      }
     }
     
-    console.log('[customRouter.navigate] Navigating to:', url);
+    let url = resolvedPath;
+    if (searchParams && Object.keys(searchParams).length > 0) {
+      const params = new URLSearchParams(searchParams);
+      url = `${resolvedPath}?${params.toString()}`;
+    }
+    
+    console.log('[customRouter.navigate] Navigating from', window.location.pathname, 'to:', url, '(original:', path, ')');
     
     // Use History API for path-based routing
     window.history.pushState({}, '', url);
