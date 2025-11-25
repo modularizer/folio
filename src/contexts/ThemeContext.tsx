@@ -11,9 +11,14 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface ThemeProviderProps {
+  children: ReactNode;
+  initialTheme?: Partial<Theme>;
+}
+
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme }) => {
   const [themeName, setThemeName] = useState<ThemeName>('dark');
-  const [background, setBackground] = useState<BackgroundSource | undefined>(undefined);
+  const [background, setBackground] = useState<BackgroundSource | undefined>(initialTheme?.background);
 
   // Load background from user profile on mount
   // Wait for StorageManager to be initialized first
@@ -41,6 +46,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const theme: Theme = {
     ...themes[themeName],
+    ...(initialTheme || {}),
     background,
   };
 

@@ -12,7 +12,8 @@ export { LinkedInProfileButton, default as LinkedInProfileButtonDefault } from '
 export { EmailButton, default as EmailButtonDefault } from './EmailButton';
 export { PortfolioHeader, default as PortfolioHeaderDefault } from './PortfolioHeader';
 export { LayoutToggle, default as LayoutToggleDefault } from './LayoutToggle';
-export { ProjectsGrid, default as ProjectsGridDefault, ProjectSource } from './ProjectsGrid';
+export { ProjectsGrid, default as ProjectsGridDefault } from './ProjectsGrid';
+export type { ProjectSource } from './ProjectsGrid';
 export { IconLabel, default as IconLabelDefault } from './IconLabel';
 export { TimeRangeIconLabel, default as TimeRangeIconLabelDefault } from './TimeRangeIconLabel';
 export { TokenWarningIcon, default as TokenWarningIconDefault } from './TokenWarningIcon';

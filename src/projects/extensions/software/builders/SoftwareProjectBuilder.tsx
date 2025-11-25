@@ -1,5 +1,5 @@
 import React from 'react';
-import { IProjectBuilder, CardLayoutMode } from '../../types';
+import { IProjectBuilder, CardLayoutMode } from '@/projects/types';
 import { SoftwareProjectData } from '../types/SoftwareProjectData';
 import { SoftwareProjectCard } from '../components/SoftwareProjectCard';
 import { SoftwareProjectPage } from '../components/SoftwareProjectPage';

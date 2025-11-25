@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { CardLayoutMode } from '@/projects/types/CardConfig';
 import { getSearchParam, updateSearchParams } from '@/utils/url';
 
@@ -14,12 +13,8 @@ const DEFAULT_LAYOUT_MODE: CardLayoutMode = 'small';
 const LAYOUT_PARAM = 'layout';
 
 export const CardLayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const router = useRouter();
-  const globalParams = useGlobalSearchParams();
-  
-  // Read initial layout mode from URL, default to 'medium'
-  // Try global params first, then fall back to parsing URL directly
-  const urlLayout = (globalParams[LAYOUT_PARAM] as string) || getSearchParam(LAYOUT_PARAM);
+  // Read initial layout mode from URL
+  const urlLayout = getSearchParam(LAYOUT_PARAM);
   const initialLayout = (urlLayout as CardLayoutMode) || DEFAULT_LAYOUT_MODE;
   const [layoutMode, setLayoutModeState] = useState<CardLayoutMode>(initialLayout);
 
@@ -31,26 +26,12 @@ export const CardLayoutProvider: React.FC<{ children: ReactNode }> = ({ children
     // If it's the default, remove the param; otherwise set it
     if (mode === DEFAULT_LAYOUT_MODE) {
       // Remove param if it's the default
-      updateSearchParams({ [LAYOUT_PARAM]: undefined }, router);
+      updateSearchParams({ [LAYOUT_PARAM]: undefined });
     } else {
       // Set param if it's not the default
-      updateSearchParams({ [LAYOUT_PARAM]: mode }, router);
+      updateSearchParams({ [LAYOUT_PARAM]: mode });
     }
   };
-
-  // Sync with URL params when they change externally (e.g., browser back/forward)
-  // Only sync when globalParams actually change, not when layoutMode changes internally
-  useEffect(() => {
-    const urlLayout = (globalParams[LAYOUT_PARAM] as string) || getSearchParam(LAYOUT_PARAM);
-    const newLayout = (urlLayout as CardLayoutMode) || DEFAULT_LAYOUT_MODE;
-    
-    // Only update if URL param differs from current state
-    // This handles browser back/forward navigation
-    if (newLayout !== layoutMode) {
-      setLayoutModeState(newLayout);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [globalParams]); // Only depend on globalParams, not layoutMode
 
   // Listen for browser navigation events (back/forward buttons)
   // This only fires when user uses browser back/forward, not when we update URL programmatically

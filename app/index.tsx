@@ -22,6 +22,11 @@ export default function HomeScreen() {
   const { theme } = useTheme();
   const username = getGitHubUsername();
   
+  // Get GitHub token from bundle config or env
+  const githubToken = typeof window !== 'undefined' && (window as any).__FOLIO_CONFIG__
+    ? (window as any).__FOLIO_CONFIG__.githubToken
+    : process.env.EXPO_PUBLIC_GITHUB_TOKEN;
+  
   // If no username found, show error or fallback
   if (!username) {
     return (
@@ -42,7 +47,7 @@ export default function HomeScreen() {
       username={username}
       // Optional: Add GitHub token for higher rate limits (5000/hour vs 60/hour)
       // Get token at: https://github.com/settings/tokens
-      githubToken={process.env.EXPO_PUBLIC_GITHUB_TOKEN}
+      githubToken={githubToken}
       // Optimize API usage: only fetch owner repos, limit to 20, sort by updated
       repoOptions={{
         type: 'owner', // Only repos owned by user (not forks)

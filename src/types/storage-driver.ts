@@ -1,5 +1,5 @@
-import { Project } from './project';
-import { UserProfile } from '../user/profile';
+import { Project } from '@/projects/types';
+import { UserProfile } from '@/user/profile';
 
 /**
  * Abstract interface for data storage drivers.

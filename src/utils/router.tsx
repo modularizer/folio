@@ -1,0 +1,120 @@
+/**
+ * Simple path-based router with dynamic routes
+ * 
+ * Uses the History API for clean URLs (no hash).
+ * 
+ * Supports patterns like:
+ * - / (home - default user)
+ * - /@:username (show user's repos)
+ * - /@:username/:project (show user's specific project)
+ * - /:project (show default user's project)
+ * 
+ * Search params are parsed and available in route.searchParams
+ */
+
+import { useState, useEffect } from 'react';
+
+export interface RouteMatch {
+  path: string;
+  params: Record<string, string>;
+  searchParams: URLSearchParams;
+}
+
+export function useRouter() {
+  const [route, setRoute] = useState<RouteMatch>(parseRoute());
+
+  useEffect(() => {
+    const handleNavigation = () => {
+      setRoute(parseRoute());
+    };
+
+    // Listen for browser back/forward navigation
+    window.addEventListener('popstate', handleNavigation);
+    
+    return () => window.removeEventListener('popstate', handleNavigation);
+  }, []);
+
+  const navigate = (path: string, searchParams?: Record<string, string>) => {
+    let url = path;
+    if (searchParams && Object.keys(searchParams).length > 0) {
+      const params = new URLSearchParams(searchParams);
+      url = `${path}?${params.toString()}`;
+    }
+    
+    console.log('[customRouter.navigate] Navigating to:', url);
+    
+    // Use History API for path-based routing
+    window.history.pushState({}, '', url);
+    
+    // Manually trigger route update
+    setRoute(parseRoute());
+    
+    // Dispatch popstate event so other hooks (usePathname, useSegments) update
+    console.log('[customRouter.navigate] Dispatching popstate event');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
+  return { route, navigate };
+}
+
+function parseRoute(): RouteMatch {
+  // Use pathname for path-based routing instead of hash
+  const pathname = window.location.pathname || '/';
+  
+  // Get search params from URL
+  const searchParams = new URLSearchParams(window.location.search);
+  
+  const parts = pathname.split('/').filter(p => p);
+
+  // / - home
+  if (parts.length === 0) {
+    return { path: '/', params: {}, searchParams };
+  }
+
+  // /github/:username - GitHub user route
+  if (parts.length === 2 && parts[0] === 'github') {
+    return {
+      path: '/github/:username',
+      params: { username: parts[1] },
+      searchParams
+    };
+  }
+
+  // /@username - shorthand for GitHub user
+  if (parts.length === 1 && parts[0].startsWith('@')) {
+    return { 
+      path: '/@:username', 
+      params: { username: parts[0].slice(1) }, // Remove @
+      searchParams
+    };
+  }
+
+  // /@username/:project - specific user's project
+  if (parts.length === 2 && parts[0].startsWith('@')) {
+    return { 
+      path: '/@:username/:project', 
+      params: { 
+        username: parts[0].slice(1), // Remove @
+        project: parts[1] 
+      },
+      searchParams
+    };
+  }
+
+  // /:project - default user's project (must be last as it matches any single segment)
+  if (parts.length === 1) {
+    return { 
+      path: '/:project', 
+      params: { project: parts[0] },
+      searchParams
+    };
+  }
+
+  // Fallback for other patterns
+  return { path: pathname, params: {}, searchParams };
+}
+
+export function matchRoute(current: RouteMatch, pattern: string): boolean {
+  return current.path === pattern;
+}
+

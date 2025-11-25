@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { SoftwareProjectCard } from '../../../components/SoftwareProjectCard';
 import { AppProjectData } from '../types/AppProjectData';
-import { CardLayoutMode } from '../../../../types/CardConfig';
+import { CardLayoutMode } from '@/projects/types/CardConfig';
 
 interface AppProjectCardProps {
   project: AppProjectData;

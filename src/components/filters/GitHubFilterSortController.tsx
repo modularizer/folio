@@ -11,7 +11,6 @@ import { truthy, isNotNull, minLength, and } from 'tsfiltor';
 import { BaseFilterSortController, BaseFilterSortControllerConfig } from './BaseFilterSortController';
 import { calculateCommitPercentage } from '@/utils/githubBorderColor';
 import { getSearchParam, updateSearchParams } from '@/utils/url';
-import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { FilterSortURLConfig } from './urlState';
 import { getLanguageDisplayName, isLanguageExcluded } from '@/utils/languageDisplay';
 import { getProjectSlug } from '@/utils/slug';
@@ -534,13 +533,10 @@ export class GitHubFilterSortController implements FilterSortController {
  * Uses `lang=python` format instead of `filter=lang_python&sort=langSort_python`
  */
 function useGitHubURLHook(): FilterSortURLHook {
-  const router = useRouter();
-  const globalSearchParams = useGlobalSearchParams();
-  
   return useMemo(() => ({
     readFromURL: () => {
-      // Get lang parameter from URL (works on both web and mobile)
-      const langParam = (globalSearchParams.lang as string) || getSearchParam('lang');
+      // Get lang parameter from URL
+      const langParam = getSearchParam('lang');
       
       if (langParam) {
         // Convert lang=python to internal format
@@ -556,15 +552,15 @@ function useGitHubURLHook(): FilterSortURLHook {
       }
       
       // Fall back to standard format for non-language filters/sorts
-      const filtersParam = (globalSearchParams.filter as string) || getSearchParam('filter');
+      const filtersParam = getSearchParam('filter');
       const filters = filtersParam
         ? filtersParam.split(',').filter(Boolean)
         : undefined;
       
-      const sortParam = (globalSearchParams.sort as string) || getSearchParam('sort') || undefined;
+      const sortParam = getSearchParam('sort') || undefined;
       const sort = sortParam || undefined;
       
-      const sortDirParam = sort ? ((globalSearchParams.sortDir as string) || getSearchParam('sortDir')) : null;
+      const sortDirParam = sort ? getSearchParam('sortDir') : null;
       const sortDirection = sortDirParam as 'asc' | 'desc' | undefined;
       
       return {
@@ -625,10 +621,10 @@ function useGitHubURLHook(): FilterSortURLHook {
           params['lang'] = undefined;
         }
         
-        updateSearchParams(params, router);
+        updateSearchParams(params);
       });
     },
-  }), [router]);
+  }), []);
 }
 
 export function useGitHubFilterSortController(

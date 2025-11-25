@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
-import { BaseProjectCard } from '../../components/BaseProjectCard';
+import { BaseProjectCard } from '@/projects/components/BaseProjectCard';
 import { SoftwareProjectData } from '../types/SoftwareProjectData';
 import { Language, Framework } from '../types/enums';
-import { CardLayoutMode } from '../../types/CardConfig';
+import { CardLayoutMode } from '@/projects/types/CardConfig';
 import { meetsMinStat } from '@/config/minStats';
 import { parseGitHubUrl } from '@/utils/github';
 

@@ -1,6 +1,6 @@
-import { ProjectData } from '../../types/ProjectData';
+import { ProjectData } from '@/projects/types/ProjectData';
 import { Language, Framework } from './enums';
-import { ProjectTag } from '../../types/enums';
+import { ProjectTag } from '@/projects/types/enums';
 
 /**
  * Base software project data interface.

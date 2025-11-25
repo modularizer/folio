@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { useRouter } from 'expo-router';
 import { Project } from '@/projects/types';
 import { useCardLayout } from '@/contexts/CardLayoutContext';
 import { getProjectSlug } from '@/utils/slug';
 import { cacheProjectData } from '@/utils/projectCache';
+import { useRouter } from 'expo-router';
 
 interface ProjectCardProps {
   project: Project;
@@ -16,8 +16,8 @@ interface ProjectCardProps {
  * The builder is determined by the project's template field, or defaults to BaseProjectBuilder.
  */
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const router = useRouter();
   const { layoutMode } = useCardLayout();
+  const router = useRouter();
 
   const slug = getProjectSlug(project.data);
 
@@ -27,7 +27,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
 
   const handlePress = useCallback(() => {
     router.push(`/${slug}`);
-  }, [router, slug]);
+  }, [slug, router]);
 
   // Memoize the card to prevent re-renders when props haven't changed
   const card = useMemo(() => {

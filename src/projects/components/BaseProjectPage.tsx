@@ -492,6 +492,11 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
       paddingHorizontal: 16,
       alignSelf: 'flex-start',
     },
+    backButtonContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
     backButtonText: {
       color: theme.colors.primary,
       fontSize: 16,
@@ -689,7 +694,10 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
     <View style={styles.wrapper}>
       {isWide && (
         <TouchableOpacity onPress={onBack} style={[styles.backButton, styles.backButtonOverlay]}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <View style={styles.backButtonContent}>
+            <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
+            <Text style={styles.backButtonText}>Back</Text>
+          </View>
         </TouchableOpacity>
       )}
       <ScrollView
@@ -700,7 +708,10 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
         <View style={styles.page}>
           {!isWide && (
             <TouchableOpacity onPress={onBack} style={styles.backButton}>
-              <Text style={styles.backButtonText}>← Back</Text>
+              <View style={styles.backButtonContent}>
+                <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
+                <Text style={styles.backButtonText}>Back</Text>
+              </View>
             </TouchableOpacity>
           )}
 

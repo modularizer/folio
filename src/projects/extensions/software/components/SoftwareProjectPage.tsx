@@ -8,10 +8,11 @@ import {
   Dimensions,
   Linking,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { SoftwareProjectData } from '../types/SoftwareProjectData';
 import { Language, Framework } from '../types/enums';
-import { ProjectTag } from '../../types/enums';
+import { ProjectTag } from '@/projects/types/enums';
 
 interface SoftwareProjectPageProps {
   project: SoftwareProjectData;
@@ -47,6 +48,11 @@ export const SoftwareProjectPage: React.FC<SoftwareProjectPageProps> = ({
       paddingVertical: 8,
       paddingHorizontal: 16,
       alignSelf: 'flex-start',
+    },
+    backButtonContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
     },
     backButtonText: {
       color: theme.colors.primary,
@@ -172,7 +178,10 @@ export const SoftwareProjectPage: React.FC<SoftwareProjectPageProps> = ({
       showsVerticalScrollIndicator={false}
     >
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
-        <Text style={styles.backButtonText}>← Back</Text>
+        <View style={styles.backButtonContent}>
+          <Ionicons name="arrow-back" size={18} color={theme.colors.primary} />
+          <Text style={styles.backButtonText}>Back</Text>
+        </View>
       </TouchableOpacity>
       
       <Text style={styles.title}>{project.title}</Text>

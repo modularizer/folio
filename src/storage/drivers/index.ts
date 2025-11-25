@@ -4,6 +4,7 @@
  */
 
 export { StaticStorageDriver } from './StaticStorageDriver';
+export { ConfigurableStorageDriver } from './ConfigurableStorageDriver';
 
 // Future drivers can be added here:
 // export { DatabaseStorageDriver } from './DatabaseStorageDriver';

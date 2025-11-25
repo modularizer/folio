@@ -1,4 +1,4 @@
-import { SoftwareProjectData } from '../../types/SoftwareProjectData';
+import { SoftwareProjectData } from '../../../types/SoftwareProjectData';
 
 /**
  * Software package project data.
