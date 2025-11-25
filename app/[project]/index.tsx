@@ -1,0 +1,109 @@
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
+import { BackgroundWrapper } from '@/components/BackgroundWrapper';
+import { storageManager } from '@/storage';
+import { Project } from '@/projects/types';
+import { getCachedProjectDataBySlug } from '@/utils/projectCache';
+import { getBuilderForProject } from '@/projects/builders';
+
+export default function ProjectDetailScreen() {
+  const { project: projectSlug } = useLocalSearchParams<{ project: string }>();
+  const router = useRouter();
+  const { theme } = useTheme();
+  const [project, setProject] = useState<Project | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!projectSlug) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        // Ensure StorageManager is initialized before accessing it
+        // If it's already initialized, this will return immediately
+        await storageManager.initialize();
+        let loadedProject = await storageManager.getProjectBySlug(projectSlug);
+
+        if (!loadedProject) {
+          const cachedData = await getCachedProjectDataBySlug(projectSlug);
+          if (cachedData) {
+            const builder = getBuilderForProject(cachedData);
+            loadedProject = {
+              data: cachedData,
+              builder,
+            };
+          }
+        }
+
+        setProject(loadedProject);
+      } catch (error) {
+        console.error('Failed to load project:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProject();
+  }, [projectSlug]);
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 40,
+    },
+    errorText: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (!project) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Project not found</Text>
+      </View>
+    );
+  }
+
+  const handleBack = () => {
+    router.push('/');
+  };
+
+  // Use the project's builder to render the detail page
+  const detailPage = project.builder.buildDetailPage(project.data, handleBack);
+
+  return (
+    <BackgroundWrapper 
+      background={theme.background} 
+      style={styles.container}
+      overlayOpacity={0.7}
+    >
+      {detailPage}
+    </BackgroundWrapper>
+  );
+}
+
