@@ -185,25 +185,7 @@ function getBasePath(): string {
     return '';
   }
 
-  const scripts = document.getElementsByTagName('script');
-  for (let i = 0; i < scripts.length; i++) {
-    const script = scripts[i];
-    const src = script.src;
-
-    // Check if this is the folio bundle script
-    if (src && src.includes('folio.bundle.js')) {
-      // Check for explicit data-base-path attribute
-      const dataBasePath = script.getAttribute('data-base-path');
-      if (dataBasePath !== null) {
-        console.log('[Folio] Using explicit base path from data-base-path:', dataBasePath);
-        return dataBasePath;
-      }
-    }
-  }
-
-  // Default: no base path (routes at domain root)
-  console.log('[Folio] No base path specified, using domain root');
-  return '';
+  return window.location.pathname;
 }
 
 /**
