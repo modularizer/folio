@@ -24,7 +24,10 @@ NOTE:
 - if you are using a custom domain, add `&username=yourusername` e.g. `src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true&username=yourusername"`
 
 ### Add GitHub Token (Optional but highly recommended, adds features)
-1. Create one at 
+1. Create one at `https://github.com/settings/personal-access-tokens/new`
+ - select `public:repo` scope and correct expiration
+2. Either...
+a. Hardcode it in your `index.html` using `&token
 
 ## Features
 

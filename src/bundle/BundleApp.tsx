@@ -22,6 +22,7 @@ export interface BundleAppProps {
   githubUsername?: string;
   githubToken?: string;
   theme?: Partial<Theme>;
+  basePath?: string;
 }
 
 /**
@@ -64,7 +65,7 @@ function AppRouter() {
   return <HomeScreen />;
 }
 
-export function BundleApp({ githubUsername, githubToken, theme }: BundleAppProps) {
+export function BundleApp({ githubUsername, githubToken, theme, basePath }: BundleAppProps) {
   const pathname = usePathname();
   const segments = useSegments();
 
@@ -74,8 +75,9 @@ export function BundleApp({ githubUsername, githubToken, theme }: BundleAppProps
     (window as any).__FOLIO_CONFIG__ = {
       githubUsername,
       githubToken,
+      basePath: basePath || '',
     };
-    console.log('[BundleApp] Config set:', { githubUsername, githubToken: githubToken ? '***' : undefined });
+    console.log('[BundleApp] Config set:', { githubUsername, githubToken: githubToken ? '***' : undefined, basePath });
   }
 
   useEffect(() => {

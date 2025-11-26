@@ -8,6 +8,32 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useRouter as useCustomRouter } from '@/utils/router';
 
+/**
+ * Get the base path from config
+ */
+function getBasePath(): string {
+  if (typeof window !== 'undefined' && (window as any).__FOLIO_CONFIG__) {
+    return (window as any).__FOLIO_CONFIG__.basePath || '';
+  }
+  return '';
+}
+
+/**
+ * Strip base path from pathname
+ */
+function stripBasePath(pathname: string): string {
+  const basePath = getBasePath();
+  if (!basePath) return pathname;
+  
+  // Remove base path prefix
+  if (pathname.startsWith(basePath)) {
+    const stripped = pathname.slice(basePath.length);
+    return stripped || '/';
+  }
+  
+  return pathname;
+}
+
 // Re-export the router hook with expo-router compatible API
 export function useRouter() {
   const { navigate, route } = useCustomRouter();
@@ -15,11 +41,17 @@ export function useRouter() {
   return {
     push: (path: string) => {
       console.log('[expo-router shim] push called with:', path);
-      navigate(path);
+      // Add base path back
+      const basePath = getBasePath();
+      const fullPath = basePath ? basePath + path : path;
+      navigate(fullPath);
     },
     replace: (path: string) => {
       console.log('[expo-router shim] replace called with:', path);
-      window.history.replaceState({}, '', path);
+      // Add base path back
+      const basePath = getBasePath();
+      const fullPath = basePath ? basePath + path : path;
+      window.history.replaceState({}, '', fullPath);
       window.dispatchEvent(new PopStateEvent('popstate'));
     },
     back: () => {
@@ -67,17 +99,17 @@ export function useGlobalSearchParams<T extends Record<string, string>>(): T {
 // Hook to get path segments
 export function useSegments(): string[] {
   const [segments, setSegments] = useState(() => {
-    const pathname = window.location.pathname;
+    const pathname = stripBasePath(window.location.pathname);
     const segs = pathname.split('/').filter(Boolean);
-    console.log('[useSegments] Initial:', segs);
+    console.log('[useSegments] Initial:', segs, '(stripped from:', window.location.pathname, ')');
     return segs;
   });
 
   useEffect(() => {
     const updateSegments = () => {
-      const pathname = window.location.pathname;
+      const pathname = stripBasePath(window.location.pathname);
       const segs = pathname.split('/').filter(Boolean);
-      console.log('[useSegments] Updated:', segs);
+      console.log('[useSegments] Updated:', segs, '(stripped from:', window.location.pathname, ')');
       setSegments(segs);
     };
 
@@ -91,15 +123,16 @@ export function useSegments(): string[] {
 // Hook to get pathname
 export function usePathname(): string {
   const [pathname, setPathname] = useState(() => {
-    console.log('[usePathname] Initial:', window.location.pathname);
-    return window.location.pathname;
+    const stripped = stripBasePath(window.location.pathname);
+    console.log('[usePathname] Initial:', stripped, '(stripped from:', window.location.pathname, ')');
+    return stripped;
   });
 
   useEffect(() => {
     const updatePathname = () => {
-      const path = window.location.pathname;
-      console.log('[usePathname] Updated:', path);
-      setPathname(path);
+      const stripped = stripBasePath(window.location.pathname);
+      console.log('[usePathname] Updated:', stripped, '(stripped from:', window.location.pathname, ')');
+      setPathname(stripped);
     };
 
     window.addEventListener('popstate', updatePathname);

@@ -40,7 +40,8 @@ export function useRouter() {
     
     if (!path.startsWith('/') && !path.startsWith('http')) {
       // Relative path - resolve it based on current location
-      const currentPath = window.location.pathname;
+      // Strip base path from current location for resolution
+      const currentPath = stripBasePath(window.location.pathname);
       const currentParts = currentPath.split('/').filter(p => p);
       
       if (path.startsWith('./')) {
@@ -83,10 +84,14 @@ export function useRouter() {
       }
     }
     
-    let url = resolvedPath;
+    // Add base path back to the resolved path
+    const basePath = getBasePath();
+    const fullResolvedPath = basePath ? basePath + resolvedPath : resolvedPath;
+    
+    let url = fullResolvedPath;
     if (searchParams && Object.keys(searchParams).length > 0) {
       const params = new URLSearchParams(searchParams);
-      url = `${resolvedPath}?${params.toString()}`;
+      url = `${fullResolvedPath}?${params.toString()}`;
     }
     
     console.log('[customRouter.navigate] Navigating from', window.location.pathname, 'to:', url, '(original:', path, ')');
@@ -105,9 +110,38 @@ export function useRouter() {
   return { route, navigate };
 }
 
+/**
+ * Get the base path from config
+ */
+function getBasePath(): string {
+  if (typeof window !== 'undefined' && (window as any).__FOLIO_CONFIG__) {
+    return (window as any).__FOLIO_CONFIG__.basePath || '';
+  }
+  return '';
+}
+
+/**
+ * Strip base path from pathname
+ */
+function stripBasePath(pathname: string): string {
+  const basePath = getBasePath();
+  if (!basePath) return pathname;
+  
+  // Remove base path prefix
+  if (pathname.startsWith(basePath)) {
+    const stripped = pathname.slice(basePath.length);
+    return stripped || '/';
+  }
+  
+  return pathname;
+}
+
 function parseRoute(): RouteMatch {
   // Use pathname for path-based routing instead of hash
-  const pathname = window.location.pathname || '/';
+  const rawPathname = window.location.pathname || '/';
+  
+  // Strip base path before parsing
+  const pathname = stripBasePath(rawPathname);
   
   // Get search params from URL
   const searchParams = new URLSearchParams(window.location.search);

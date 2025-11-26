@@ -30,6 +30,8 @@ export interface FolioConfig {
   githubToken?: string;
   /** Optional: Theme override */
   theme?: Partial<Theme>;
+  /** Optional: Base path for routing (auto-detected from script src) */
+  basePath?: string;
 }
 
 let rootInstance: Root | null = null;
@@ -135,6 +137,44 @@ function getUsernameFromGitHubPages(): string | null {
 }
 
 /**
+ * Extract base path from script src
+ * e.g. /folio/dist/folio.bundle.js => "/folio"
+ */
+function getBasePath(): string {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  const scripts = document.getElementsByTagName('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
+    const src = script.src;
+
+    // Check if this is the folio bundle script
+    if (src && src.includes('folio.bundle.js')) {
+      try {
+        // Parse URL to get pathname
+        const url = new URL(src, window.location.href);
+        const pathname = url.pathname;
+        
+        // Extract base path: /path/to/dist/folio.bundle.js => /path/to
+        // Remove /dist/folio.bundle.js from the end
+        const match = pathname.match(/^(.*)\/dist\/folio\.bundle\.js$/);
+        if (match && match[1]) {
+          const basePath = match[1];
+          console.log('[Folio] Detected base path:', basePath);
+          return basePath;
+        }
+      } catch (error) {
+        console.error('[Folio] Failed to parse script URL for base path:', error);
+      }
+    }
+  }
+
+  return '';
+}
+
+/**
  * Initialize Folio portfolio in the specified container
  */
 export function init(config: FolioConfig): void {
@@ -153,9 +193,13 @@ export function init(config: FolioConfig): void {
   // Try to get username from GitHub Pages subdomain if not provided
   const githubPagesUsername = getUsernameFromGitHubPages();
 
+  // Auto-detect base path from script src
+  const detectedBasePath = getBasePath();
+
   // Merge configs (explicit config takes priority, then script config, then GitHub Pages subdomain)
   const githubUsername = config.githubUsername || scriptConfig.username || githubPagesUsername;
   const githubToken = config.githubToken || scriptConfig.token;
+  const basePath = config.basePath !== undefined ? config.basePath : detectedBasePath;
 
   // Build theme from script params and config
   const theme: Partial<Theme> = {
@@ -190,6 +234,7 @@ export function init(config: FolioConfig): void {
         githubUsername={githubUsername}
         githubToken={githubToken}
         theme={theme}
+        basePath={basePath}
       />
     </React.StrictMode>
   );
