@@ -41,18 +41,20 @@ export function useRouter() {
   return {
     push: (path: string) => {
       console.log('[expo-router shim] push called with:', path);
-      // Add base path back
-      const basePath = getBasePath();
-      const fullPath = basePath ? basePath + path : path;
-      navigate(fullPath);
+      // Pass path directly to navigate() - it handles both absolute and relative paths
+      // Relative paths (./page, ../page) are resolved relative to current location
+      // Absolute paths (/page) are resolved from root
+      navigate(path);
     },
     replace: (path: string) => {
       console.log('[expo-router shim] replace called with:', path);
-      // Add base path back
-      const basePath = getBasePath();
-      const fullPath = basePath ? basePath + path : path;
-      window.history.replaceState({}, '', fullPath);
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      // For replace, we need to resolve the path through navigate logic
+      // but use replaceState instead of pushState
+      // For now, just call navigate which will handle path resolution
+      navigate(path);
+      // Then immediately replace the last history entry
+      const currentUrl = window.location.href;
+      window.history.replaceState({}, '', currentUrl);
     },
     back: () => {
       console.log('[expo-router shim] back called');

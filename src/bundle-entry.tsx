@@ -169,8 +169,16 @@ function getHostnameBasedUsername(username: string | null | undefined): string |
 }
 
 /**
- * Extract base path from script src
- * e.g. /folio/dist/folio.bundle.js => "/folio"
+ * Get base path from data-base-path attribute
+ * 
+ * The base path should be explicitly set via data-base-path attribute if needed.
+ * It should NOT be derived from the script source URL, as the script can be loaded
+ * from anywhere (CDN, different subdirectory, etc) and has no relationship to the
+ * page's routing structure.
+ * 
+ * Examples:
+ * - data-base-path="" (or omitted) => routes at root: /project
+ * - data-base-path="/folio" => routes under /folio: /folio/project
  */
 function getBasePath(): string {
   if (typeof window === 'undefined') {
@@ -184,25 +192,17 @@ function getBasePath(): string {
 
     // Check if this is the folio bundle script
     if (src && src.includes('folio.bundle.js')) {
-      try {
-        // Parse URL to get pathname
-        const url = new URL(src, window.location.href);
-        const pathname = url.pathname;
-        
-        // Extract base path: /path/to/dist/folio.bundle.js => /path/to
-        // Remove /dist/folio.bundle.js from the end
-        const match = pathname.match(/^(.*)\/dist\/folio\.bundle\.js$/);
-        if (match && match[1]) {
-          const basePath = match[1];
-          console.log('[Folio] Detected base path:', basePath);
-          return basePath;
-        }
-      } catch (error) {
-        console.error('[Folio] Failed to parse script URL for base path:', error);
+      // Check for explicit data-base-path attribute
+      const dataBasePath = script.getAttribute('data-base-path');
+      if (dataBasePath !== null) {
+        console.log('[Folio] Using explicit base path from data-base-path:', dataBasePath);
+        return dataBasePath;
       }
     }
   }
 
+  // Default: no base path (routes at domain root)
+  console.log('[Folio] No base path specified, using domain root');
   return '';
 }
 

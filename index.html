@@ -25,13 +25,17 @@
     - data-username: GitHub username (or "subdomain", "domain", "route" for auto-detect)
     - data-token: Optional GitHub API token for higher rate limits
     - data-init: Auto-initialize (set to "true")
-    - data-base-path: Base path for routing (e.g., "/folio" for github.io/folio)
+    - data-base-path: Base path for routing if app is NOT at domain root
+      * Omit or set to "" if routes are at domain root (e.g., example.com/project)
+      * Set to "/folio" if routes are under /folio (e.g., example.com/folio/project)
+      * Note: This is about YOUR page's URL structure, not where the script is loaded from
     
     Examples:
     - Explicit username: data-username="modularizer"
     - Auto-detect from subdomain: data-username="subdomain"
     - Auto-detect from domain: data-username="domain"
     - Auto-detect from route: data-username="route"
+    - Base path: data-base-path="/folio" (only if your URLs are like example.com/folio/...)
   -->
   <script src="dist/folio.bundle.js" data-init="true"></script>
 </body>

@@ -14,16 +14,20 @@ see https://github.com/modularizer/modularizer.github.io which was used to build
 1. Make a github repo to host a free GitHubPages Site
     - name the repo `yourusername.github.io` (using your actual name) if you want to create a site at your pages root https://youusername.github.io
     - if you name the repo anything else, e.g. `folio`, your site will be at https://youusername.github.io/folio
-2. Add an `index.html` folder in the project root which imports our bundle
+2. Add an `index.html` file in the project root which imports the bundle from CDN or self-hosted
     ```html
     <!DOCTYPE html>
     <html lang="en">
-    <script src="https://modularizer.github.io/folio/dist/folio.bundle.js?username=subdomain&init=true"></script>
+    <script src="https://cdn.jsdelivr.net/gh/modularizer/folio@master/dist/folio.bundle.js" 
+            data-init="true" 
+            data-username="subdomain"></script>
     </html>
     ```
 **NOTE:** 
-- if you are deploying on a github.io subdomain using GitHub Pages it will auto-detect your username if you use `username=subdomain` in the script src url
-- if you are using a custom domain, set`username=yourusername` e.g. `src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true&username=yourusername"`
+- Use `data-username="subdomain"` to auto-detect username from github.io subdomain (e.g., `modularizer.github.io` → `modularizer`)
+- For custom domains, set explicitly: `data-username="yourusername"`
+- Add `data-base-path="/folio"` only if your routes are under a subdirectory (e.g., for `example.com/folio/project`). Omit for root deployment.
+- Script can be loaded from anywhere (CDN, different path, etc.) - routing is based on your page location, not script location
 
 ### Add GitHub Token (Optional but highly recommended, adds features)
 1. Create one at `https://github.com/settings/tokens/new?scopes=public_repo&description=Portfolio%20App`
