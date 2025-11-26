@@ -20,10 +20,18 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - run: npm ci
+      - run: npm run build
 
       - name: Inject token into index.html
         run: sed -i 's/init=true/init=true\&token=${{ secrets.PORTFOLIO_GITHUB_TOKEN }}/g' index.html

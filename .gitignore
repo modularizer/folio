@@ -24,6 +24,7 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build outputs (keep dist/ for easy deployment)
+# Build outputs (built by GitHub Actions on deploy)
+dist/
 build/
 dev-build/
