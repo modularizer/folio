@@ -19,19 +19,15 @@
 <body>
   <div id="root"></div>
   <!-- 
-    Load Folio bundle with configuration.
+    GitHub Pages SPA routing: This 404.html file handles all routes.
+    When GitHub Pages can't find a file (e.g., /@username), it serves this page.
+    The JavaScript router will read window.location.pathname and render the correct route.
     
     Configuration options (as data attributes):
     - data-username: GitHub username (or "subdomain", "domain", "route" for auto-detect)
     - data-token: Optional GitHub API token for higher rate limits
     - data-init: Auto-initialize (set to "true")
     - data-base-path: Base path for routing (e.g., "/folio" for github.io/folio)
-    
-    Examples:
-    - Explicit username: data-username="modularizer"
-    - Auto-detect from subdomain: data-username="subdomain"
-    - Auto-detect from domain: data-username="domain"
-    - Auto-detect from route: data-username="route"
   -->
   <script src="dist/folio.bundle.js" data-init="true"></script>
 </body>

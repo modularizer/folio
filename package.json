@@ -7,7 +7,9 @@
     "start": "npx expo start --web",
     "dev": "webpack serve --config webpack.dev.config.js",
     "build": "webpack --config webpack.config.js",
-    "build:watch": "webpack --config webpack.config.js --watch"
+    "build:watch": "webpack --config webpack.config.js --watch",
+    "build:deploy": "npm run build && cp index.html dist/ && cp 404.html dist/",
+    "postbuild": "echo '\n✅ Build complete! For deployment, run: npm run build:deploy'"
   },
   "keywords": [],
   "author": "",
