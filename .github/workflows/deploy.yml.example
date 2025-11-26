@@ -1,0 +1,44 @@
+# Optional: Deploy with GitHub Token Injection
+#
+# SETUP:
+# 1. Rename to: .github/workflows/deploy.yml
+# 2. Create token: https://github.com/settings/tokens/new (scope: public_repo)
+# 3. Add secret: Settings → Secrets → Actions → PORTFOLIO_GITHUB_TOKEN
+# 4. Enable Pages: Settings → Pages → Source: GitHub Actions
+# 5. Push and deploy!
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - run: npm ci
+      - run: npm run build
+      
+      - name: Inject token into index.html
+        run: sed -i 's/init=true/init=true\&token=${{ secrets.PORTFOLIO_GITHUB_TOKEN }}/g' index.html
+        
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - uses: actions/deploy-pages@v4
+
