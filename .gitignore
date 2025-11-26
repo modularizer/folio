@@ -25,6 +25,5 @@ yarn-error.log*
 .env.production.local
 
 # Build outputs (built by GitHub Actions on deploy)
-dist/
 build/
 dev-build/

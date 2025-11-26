@@ -4,6 +4,28 @@ Build a configurable portfolio from your public github projects.
 
 
 
+
+## Quickstart
+You have a few options:
+
+### Basic
+1. Make a github repo to host a GitHubPages Site
+    - name the repo `yourusername.github.io` (using your actual name) if you want to create a site at your pages root https://youusername.github.io
+    - if you name the repo anything else, e.g. `folio`, your site will be at https://youusername.github.io/folio
+2. Add an `index.html` folder in the project root
+```html
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true"></script>
+</html>
+```
+NOTE: 
+- if you are deploying on a github.io subdomain using GitHub Pages it will auto-detect your username
+- if you are using a custom domain, add `&username=yourusername` e.g. `src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true&username=yourusername"`
+
+### Add GitHub Token (Optional but highly recommended, adds features)
+1. Create one at 
+
 ## Features
 
 - 🎨 **Parameterized Theme System** - Dark mode with support for additional themes
