@@ -5,6 +5,8 @@
  * @license  MIT
  */
 
+/*! Folio bundle build timestamp: 2025-11-26T08:55:02.911Z */
+
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */

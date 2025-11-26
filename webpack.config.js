@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -90,5 +91,26 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
+    new webpack.BannerPlugin({
+      banner: () => {
+        const timestamp = new Date().toISOString();
+        return `/*! Folio bundle build timestamp: ${timestamp} */`;
+      },
+      raw: true,
+      entryOnly: true,
+    }),
   ],
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+        terserOptions: {
+          format: {
+            comments: /Folio bundle build timestamp/,
+          },
+        },
+      }),
+    ],
+  },
 };
