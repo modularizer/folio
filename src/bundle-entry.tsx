@@ -106,6 +106,11 @@ function getConfigFromScript(): ScriptConfig {
 
     const dataBg = script.getAttribute('data-bg-color');
     if (dataBg) config.backgroundColor = dataBg;
+
+    const dataInit = script.getAttribute('data-init');
+    if (dataInit !== null) {
+      config.init = dataInit === '' || dataInit === 'true' ? true : dataInit;
+    }
   }
 
   return config;
