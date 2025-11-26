@@ -409,8 +409,35 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
                   shouldUseLiveUrl = true;
                 }
               }
+
+              // Check if we should avoid recursive previews
+              const shouldAvoidRecursion = (() => {
+                // Check if project name is "folio"
+                if (project.githubUrl) {
+                  const match = project.githubUrl.match(/github\.com\/[^\/]+\/([^\/]+)/);
+                  const projectName = match ? match[1] : null;
+                  if (projectName?.toLowerCase() === 'folio') {
+                    return true;
+                  }
+                }
+                
+                // Check if current window location starts with the liveUrl
+                if (project.liveUrl && typeof window !== 'undefined') {
+                  try {
+                    const liveUrl = project.liveUrl.startsWith('http') ? project.liveUrl : `https://${project.liveUrl}`;
+                    const currentLocation = window.location.href;
+                    if (currentLocation.startsWith(liveUrl)) {
+                      return true;
+                    }
+                  } catch (e) {
+                    // Ignore errors
+                  }
+                }
+                
+                return false;
+              })();
               
-              if (shouldUseLiveUrl && project.liveUrl) {
+              if (shouldUseLiveUrl && project.liveUrl && !shouldAvoidRecursion) {
                 return (
                   <>
                     <LiveUrlPreview
@@ -420,8 +447,8 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
                     />
                   </>
                 );
-              } else if (!project.liveUrl && project.githubUrl) {
-                // If no liveUrl but has githubUrl, show README preview
+              } else if ((!project.liveUrl || shouldAvoidRecursion) && project.githubUrl) {
+                // If no liveUrl or should avoid recursion, show README preview
                 return (
                   <>
                     <ReadmePreview

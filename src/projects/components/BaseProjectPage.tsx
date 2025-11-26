@@ -438,10 +438,49 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
   const heroHeight = isWide ? 360 : 240;
 
   const renderHero = () => {
-    if (project.liveUrl) {
+    // Check if we should avoid recursive previews
+    const shouldAvoidRecursion = (() => {
+      // Check if project name is "folio"
+      if (project.githubUrl) {
+        const match = project.githubUrl.match(/github\.com\/[^\/]+\/([^\/]+)/);
+        const projectName = match ? match[1] : null;
+        if (projectName?.toLowerCase() === 'folio') {
+          return true;
+        }
+      }
+      
+      // Check if current window location starts with the liveUrl
+      if (project.liveUrl && typeof window !== 'undefined') {
+        try {
+          const liveUrl = project.liveUrl.startsWith('http') ? project.liveUrl : `https://${project.liveUrl}`;
+          const currentLocation = window.location.href;
+          if (currentLocation.startsWith(liveUrl)) {
+            return true;
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+      
+      return false;
+    })();
+
+    if (project.liveUrl && !shouldAvoidRecursion) {
       return (
         <LiveUrlPreview
           url={project.liveUrl}
+          imageUrl={project.imageUrl}
+          style={{ width: '100%', height: heroHeight, borderRadius: 20 }}
+        />
+      );
+    }
+
+    // If we should avoid recursion and have a GitHub URL, show README preview
+    if (shouldAvoidRecursion && project.githubUrl) {
+      return (
+        <ReadmePreview
+          githubUrl={project.githubUrl}
+          defaultBranch={(project as any).githubDefaultBranch}
           imageUrl={project.imageUrl}
           style={{ width: '100%', height: heroHeight, borderRadius: 20 }}
         />
