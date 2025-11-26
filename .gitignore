@@ -1,6 +1,5 @@
 # Expo
 .expo/
-dist/
 web-build/
 .env
 expo-env.d.ts
@@ -25,7 +24,6 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build outputs
-dist/
+# Build outputs (keep dist/ for easy deployment)
 build/
 dev-build/

@@ -1,8 +1,8 @@
 # Folio
 
-A modern, responsive portfolio website template built with React Native (using Expo) and TypeScript. This project uses Expo Router for file-based routing and supports both web and mobile platforms.
+Build a configurable portfolio from your public github projects.
 
-**This is a template repository** - customize the `user/` directory with your own information and projects.
+
 
 ## Features
 
