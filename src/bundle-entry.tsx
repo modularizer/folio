@@ -117,24 +117,51 @@ function getConfigFromScript(): ScriptConfig {
 }
 
 /**
- * Extract GitHub username from GitHub Pages subdomain
- * e.g. modularizer.github.io => "modularizer"
+ * Extract username from hostname or pathname based on special keywords
+ * 
+ * @param username - Special keyword: "subdomain", "domain", or "route"
+ * @returns Extracted username or null
+ * 
+ * Examples:
+ * - "subdomain" from "modularizer.github.io" => "modularizer"
+ * - "domain" from "google.com" => "google"
+ * - "route" from "/cat/dog/" => "dog"
  */
-function getUsernameFromGitHubPages(): string | null {
+function getHostnameBasedUsername(username: string | null | undefined): string | null {
   if (typeof window === 'undefined') {
     return null;
   }
 
   const hostname = window.location.hostname;
-  
-  // Check if we're on GitHub Pages (username.github.io)
-  const githubPagesMatch = hostname.match(/^([^\.]+)\.github\.io$/);
-  if (githubPagesMatch && githubPagesMatch[1]) {
-    const username = githubPagesMatch[1];
-    // Exclude common non-username subdomains
-    if (username !== 'www' && username !== 'pages' && username.length > 0) {
-      console.log('[Folio] Detected GitHub Pages username:', username);
-      return username;
+  const pathname = window.location.pathname;
+
+  // If username is explicitly "subdomain", extract first subdomain
+  if (username === 'subdomain') {
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      const subdomain = parts[0];
+      console.log('[Folio] Using subdomain from hostname:', subdomain);
+      return subdomain;
+    }
+  }
+
+  // If username is explicitly "domain", extract domain name
+  if (username === 'domain') {
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      const domain = parts[parts.length - 2];
+      console.log('[Folio] Using domain from hostname:', domain);
+      return domain;
+    }
+  }
+
+  // If username is explicitly "route", extract last path segment
+  if (username === 'route') {
+    const parts = pathname.split('/').filter(p => p.length > 0);
+    if (parts.length > 0) {
+      const route = parts[parts.length - 1];
+      console.log('[Folio] Using route from pathname:', route);
+      return route;
     }
   }
 
@@ -195,14 +222,17 @@ export function init(config: FolioConfig): void {
   // Auto-detect config from script tag
   const scriptConfig = getConfigFromScript();
 
-  // Try to get username from GitHub Pages subdomain if not provided
-  const githubPagesUsername = getUsernameFromGitHubPages();
-
   // Auto-detect base path from script src
   const detectedBasePath = getBasePath();
 
-  // Merge configs (explicit config takes priority, then script config, then GitHub Pages subdomain)
-  const githubUsername = config.githubUsername || scriptConfig.username || githubPagesUsername;
+  // Merge configs (explicit config takes priority, then script config)
+  const preliminaryUsername = config.githubUsername || scriptConfig.username;
+  
+  // Check if username is a special keyword ("subdomain" or "domain")
+  const hostnameBasedUsername = getHostnameBasedUsername(preliminaryUsername);
+  
+  // Use hostname-based username if detected, otherwise use preliminary username
+  const githubUsername = hostnameBasedUsername || preliminaryUsername;
   const githubToken = config.githubToken || scriptConfig.token;
   const basePath = config.basePath !== undefined ? config.basePath : detectedBasePath;
 

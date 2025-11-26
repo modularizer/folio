@@ -14,9 +14,45 @@ if (!container) {
   throw new Error('Root container not found');
 }
 
+/**
+ * Process username special keywords
+ * - "subdomain": Extract first subdomain from hostname
+ * - "domain": Extract domain name from hostname
+ * - "route": Extract last path segment from pathname
+ */
+function processUsername(username: string | undefined): string | undefined {
+  if (!username) return username;
+  
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
+  
+  if (username === 'subdomain') {
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      return parts[0];
+    }
+  }
+  
+  if (username === 'domain') {
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      return parts[parts.length - 2];
+    }
+  }
+  
+  if (username === 'route') {
+    const parts = pathname.split('/').filter(p => p.length > 0);
+    if (parts.length > 0) {
+      return parts[parts.length - 1];
+    }
+  }
+  
+  return username;
+}
+
 // Development configuration from .env file
 const DEV_CONFIG = {
-  githubUsername: process.env.EXPO_PUBLIC_GITHUB_USERNAME || 'modularizer',
+  githubUsername: processUsername(process.env.EXPO_PUBLIC_GITHUB_USERNAME || 'modularizer'),
   githubToken: process.env.EXPO_PUBLIC_GITHUB_TOKEN || undefined,
   theme: {
     // Optional theme overrides from .env
