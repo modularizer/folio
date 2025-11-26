@@ -3,31 +3,44 @@
 Build a configurable portfolio from your public github projects.
 
 
+### Sample
+![docs/demo.png](docs/demo.png)
+see https://github.com/modularizer/modularizer.github.io which was used to build https://modularizer.github.io/
 
+### Try it live!
 
-## Quickstart
-You have a few options:
-
-### Basic
-1. Make a github repo to host a GitHubPages Site
+## Quickstart (if you don't want to do much customization)
+### Basic 
+1. Make a github repo to host a free GitHubPages Site
     - name the repo `yourusername.github.io` (using your actual name) if you want to create a site at your pages root https://youusername.github.io
     - if you name the repo anything else, e.g. `folio`, your site will be at https://youusername.github.io/folio
-2. Add an `index.html` folder in the project root
-```html
-<!DOCTYPE html>
-<html lang="en">
-<script src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true"></script>
-</html>
-```
-NOTE: 
+2. Add an `index.html` folder in the project root which imports our bundle
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <script src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true"></script>
+    </html>
+    ```
+**NOTE:** 
 - if you are deploying on a github.io subdomain using GitHub Pages it will auto-detect your username
 - if you are using a custom domain, add `&username=yourusername` e.g. `src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true&username=yourusername"`
 
 ### Add GitHub Token (Optional but highly recommended, adds features)
-1. Create one at `https://github.com/settings/personal-access-tokens/new`
- - select `public:repo` scope and correct expiration
+1. Create one at `https://github.com/settings/tokens/new?scopes=public_repo&description=Portfolio%20App`
 2. Either...
-a. Hardcode it in your `index.html` using `&token
+   a. Hardcode it in your `index.html` using `&token=ghp_...` OR
+   b. Insert it into the built site using a github workflow (it will **still be publicly accessible**, but given the limited scope that is okay, and this way it will not be committed to your github repo)
+      1. under your project's Settings > Secrets and variables > Actions > Repository secrets > + New repository secret > PORTFOLIO_GITHUB_TOKEN
+      2. copy [.github/workflows/deploy.yml.example](.github/workflows/deploy.yml.example) into your repo as `.github/workflows/deploy.yml`
+
+
+## Setup (if you plan to customize)
+1. Clone this repo
+2. `npm install`
+3. Create a token to use in the github api at `https://github.com/settings/tokens/new?scopes=public_repo&description=Portfolio%20App`
+4. Copy [`.env.example`](.env.example) to `.env`
+5. `npm run start` to start serving locally
+6. modify users/ folder to configure
 
 ## Features
 
@@ -39,173 +52,3 @@ a. Hardcode it in your `index.html` using `&token
 - 💻 **React Native Web** - Write once, run on web and mobile
 - 🔧 **Customizable Builders** - Each project can have its own custom rendering logic
 - 👤 **User Data Separation** - Personal info and projects are separated from generic code
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v18 or later)
-- npm or yarn
-
-### Installation
-
-```bash
-npm install
-```
-
-### Customization
-
-**Important:** Before using this template, customize the following files in the `user/` directory:
-
-1. **`user/profile.ts`** - Add your personal information:
-   - Name
-   - Title/Bio
-   - Contact information
-   - Social media links (GitHub, LinkedIn, Twitter, etc.)
-
-2. **`user/projects.ts`** - Add your portfolio projects:
-   - Each project needs `data` (JSON) and a `builder` (rendering class)
-   - Use `BaseProjectBuilder()` for standard projects
-   - Create custom builders for unique project layouts
-
-See `user/README.md` for detailed customization instructions.
-
-### Development
-
-Start the development server:
-
-```bash
-npm start
-```
-
-Then press:
-- `w` to open in web browser
-- `a` to open in Android emulator
-- `i` to open in iOS simulator
-
-Or use the specific commands:
-
-```bash
-npm run web      # Web only
-npm run android  # Android only
-npm run ios      # iOS only
-```
-
-## Project Structure
-
-```
-about/
-├── app/                 # Expo Router pages
-│   ├── _layout.tsx     # Root layout (initializes storage)
-│   ├── index.tsx       # Home page
-│   └── projects/       # Project detail pages
-│       └── [id].tsx    # Dynamic project route
-├── components/         # Reusable components
-│   └── ProjectCard.tsx # Project preview card wrapper
-├── contexts/           # React contexts
-│   └── ThemeContext.tsx # Theme management
-├── data/              # Data access layer
-│   ├── projects.ts    # Project data helpers
-│   └── profile.ts     # Profile data helpers
-├── storage/            # Storage abstraction layer
-│   ├── StorageManager.ts # Central storage manager
-│   └── drivers/       # Storage driver implementations
-│       ├── StaticStorageDriver.ts # Static/hardcoded data (default)
-│       └── ExampleDatabaseDriver.ts # Example DB driver template
-├── projects/          # Project builder implementations
-│   ├── base/         # BaseProjectBuilder (default)
-│   └── example/      # ExampleProjectBuilder (custom)
-├── types/            # TypeScript types
-│   ├── project.ts    # Project type definitions
-│   ├── project-builder.ts # Builder interface
-│   ├── storage-driver.ts # Storage driver interface
-│   └── theme.ts      # Theme type definitions
-├── user/             # USER-SPECIFIC DATA (customize this!)
-│   ├── profile.ts    # Your personal information
-│   ├── projects.ts   # Your portfolio projects
-│   └── README.md     # Customization guide
-└── assets/           # Static assets (images, etc.)
-```
-
-## Adding Projects
-
-Edit `user/projects.ts` to add your portfolio projects:
-
-```typescript
-export const userProjects: Project[] = [
-  {
-    data: {
-      id: 'my-project',
-      title: 'My Project',
-      description: 'A cool project description',
-      githubUrl: 'https://github.com/username/project',
-      liveUrl: 'https://project-demo.com',
-      tags: ['React', 'TypeScript'],
-      featured: true,
-    },
-    builder: new BaseProjectBuilder(),
-  },
-];
-```
-
-### Custom Project Builders
-
-If you want a project to have unique styling or layout, create a custom builder:
-
-1. Create a new file: `projects/your-project/YourProjectBuilder.tsx`
-2. Extend `BaseProjectBuilder` or implement `IProjectBuilder`
-3. Override `buildPreviewCard()` and/or `buildDetailPage()` methods
-4. Import and use it in `user/projects.ts`
-
-See `projects/example/ExampleProject.tsx` for a reference implementation.
-
-## Storage Drivers
-
-The application uses a storage abstraction layer that allows you to switch between different data sources:
-
-- **StaticStorageDriver** (default) - Loads from hardcoded TypeScript files in `user/`
-- **Database Driver** - Can be implemented to load from a database
-- **API Driver** - Can be implemented to load from an API
-- **Custom Drivers** - Implement `IStorageDriver` interface for any data source
-
-By default, the app uses `StaticStorageDriver` which reads from `user/profile.ts` and `user/projects.ts`. This is perfect for static site generation.
-
-To switch to a different driver, modify `app/_layout.tsx`:
-
-```typescript
-import { DatabaseStorageDriver } from '@/storage/drivers';
-await storageManager.initialize(new DatabaseStorageDriver({ ... }));
-```
-
-See `storage/README.md` and `storage/drivers/README.md` for more details.
-
-## Theming
-
-The theme system is fully parameterized. To customize:
-
-1. Edit `types/theme.ts` to modify theme colors
-2. Use `useTheme()` hook in components to access theme
-3. Set background image via `ThemeContext`
-
-## Building for Production
-
-### Web (Static Export)
-
-```bash
-npx expo export:web
-```
-
-The static files will be in the `web-build/` directory.
-
-## Template Usage
-
-This is a template repository designed to be forked and customized. The `user/` directory contains all user-specific data that should be customized:
-
-- **Personal Information**: `user/profile.ts`
-- **Portfolio Projects**: `user/projects.ts`
-
-All other code is generic and can be shared across different portfolio instances.
-
-## License
-
-ISC
