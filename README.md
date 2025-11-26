@@ -18,12 +18,12 @@ see https://github.com/modularizer/modularizer.github.io which was used to build
     ```html
     <!DOCTYPE html>
     <html lang="en">
-    <script src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true"></script>
+    <script src="https://modularizer.github.io/folio/dist/folio.bundle.js?username=subdomain&init=true"></script>
     </html>
     ```
 **NOTE:** 
-- if you are deploying on a github.io subdomain using GitHub Pages it will auto-detect your username
-- if you are using a custom domain, add `&username=yourusername` e.g. `src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true&username=yourusername"`
+- if you are deploying on a github.io subdomain using GitHub Pages it will auto-detect your username if you use `username=subdomain` in the script src url
+- if you are using a custom domain, set`username=yourusername` e.g. `src="https://modularizer.github.io/folio/dist/folio.bundle.js?init=true&username=yourusername"`
 
 ### Add GitHub Token (Optional but highly recommended, adds features)
 1. Create one at `https://github.com/settings/tokens/new?scopes=public_repo&description=Portfolio%20App`
