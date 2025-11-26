@@ -15,9 +15,11 @@ export function UsernameInput() {
   const handleSubmit = () => {
     const trimmedUsername = username.trim();
     if (trimmedUsername) {
-      // Navigate to /@username
-      console.log('[UsernameInput] Navigating to:', `/@${trimmedUsername}`);
-      navigate(`/@${trimmedUsername}`);
+      // Navigate relative to current location so subdirectory deployments work
+      // Example: ./@username keeps whatever base/path the site is currently on
+      const relativePath = `./@${trimmedUsername}`;
+      console.log('[UsernameInput] Navigating to (relative):', relativePath);
+      navigate(relativePath);
     }
   };
 
