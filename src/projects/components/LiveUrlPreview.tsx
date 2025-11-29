@@ -198,9 +198,11 @@ export const LiveUrlPreview: React.FC<LiveUrlPreviewProps> = ({
         iframe.style.pointerEvents = 'none';
         iframe.style.transform = `scale(${scale})`;
         iframe.style.transformOrigin = 'top left';
+        iframe.style.backgroundColor = 'transparent'; // Make iframe itself transparent
         iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-modals');
         iframe.onload = () => {
           // Inject script to override prompt function
+          // Note: We don't force background transparency here - let the content's own styles control it
           try {
             const iframeWindow = iframe.contentWindow;
             const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
@@ -258,7 +260,7 @@ export const LiveUrlPreview: React.FC<LiveUrlPreviewProps> = ({
 
   return (
     <View ref={wrapperRef}
-          style={style}
+          style={[style, { backgroundColor: 'transparent' }]}
           onLayout={handleLayout}>
       <View
         style={{
@@ -266,6 +268,7 @@ export const LiveUrlPreview: React.FC<LiveUrlPreviewProps> = ({
           height: cardHeight,
           overflow: 'hidden',
           borderRadius,
+          backgroundColor: 'transparent', // Allow page background to show through
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -295,7 +298,7 @@ export const LiveUrlPreview: React.FC<LiveUrlPreviewProps> = ({
                 style={{ width: cardWidth,
                     // height: 2000,
                     // overflow: 'hidden',
-                    backgroundColor: 'white' }} />
+                    backgroundColor: 'transparent' }} />
         ) : (
           <View style={{ 
             position: 'absolute',
@@ -304,11 +307,11 @@ export const LiveUrlPreview: React.FC<LiveUrlPreviewProps> = ({
             width: DESKTOP_WIDTH, 
             height: DESKTOP_HEIGHT, 
             transform: [{ scale }],
-            backgroundColor: 'white',
+            backgroundColor: 'transparent',
           }}>
             <WebView
               source={{ uri: fullUrl }}
-              style={{ width: DESKTOP_WIDTH, height: DESKTOP_HEIGHT, backgroundColor: 'white' }}
+              style={{ width: DESKTOP_WIDTH, height: DESKTOP_HEIGHT, backgroundColor: 'transparent' }}
               scrollEnabled={isHovered}
               pointerEvents={isHovered ? 'auto' : 'none'}
               javaScriptEnabled={true}

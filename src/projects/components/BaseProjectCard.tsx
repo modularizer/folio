@@ -254,7 +254,7 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
     imageContainer: {
       width: layoutMode === 'list' ? defaultConfig.imageHeight * 2 : '100%',
       height: layoutMode === 'list' ? '100%' : cardDimensions.imageHeight,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: 'transparent', // Allow page background to show through
       overflow: 'hidden', // Clip image to container
       position: 'relative', // Allow absolute positioning of bookmark icon
       ...(layoutMode !== 'list' && {
@@ -453,29 +453,34 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
                 return false;
               })();
               
+              // For GitHub projects, never show the image - only show LiveUrlPreview or ReadmePreview
+              const isGitHubProject = !!project.githubUrl;
+              
               if (shouldUseLiveUrl && project.liveUrl && !shouldAvoidRecursion) {
                 return (
                   <>
                     <LiveUrlPreview
                       url={project.liveUrl}
-                      imageUrl={project.imageUrl}
+                      imageUrl={isGitHubProject ? undefined : project.imageUrl}
                       style={styles.image}
                     />
                   </>
                 );
               } else if ((!project.liveUrl || shouldAvoidRecursion) && project.githubUrl) {
                 // If no liveUrl or should avoid recursion, show README preview
+                // For GitHub projects, never pass imageUrl
                 return (
                   <>
                     <ReadmePreview
                       githubUrl={project.githubUrl}
                       defaultBranch={(project as any).githubDefaultBranch}
-                      imageUrl={project.imageUrl}
+                      imageUrl={undefined}
                       style={styles.image}
                     />
                   </>
                 );
-              } else if (project.imageUrl) {
+              } else if (project.imageUrl && !isGitHubProject) {
+                // Only show image if it's not a GitHub project
                 return (
                   <Image
                     source={{ uri: project.imageUrl }}

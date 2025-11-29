@@ -46,6 +46,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
     const fetchReadme = async () => {
       setLoading(true);
       setError(false);
+      setDataUrl(''); // Clear previous dataUrl to prevent showing old HTML with wrong theme
 
       if (!repoPath) {
         setError(true);
@@ -96,7 +97,8 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
           gfm: true, // GitHub Flavored Markdown
         });
         
-        // Wrap in styled HTML with light mode colors
+        // Wrap in styled HTML with light mode colors and 80% opacity white background
+        // Use a wrapper div for the background so the body/html can be transparent
         const styledHtml = `
           <!DOCTYPE html>
           <html>
@@ -108,62 +110,72 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
                   padding: 0;
                   box-sizing: border-box;
                 }
-                body {
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  background-color: transparent !important;
+                  width: 100%;
+                  height: 100%;
+                }
+                .content-wrapper {
                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                   font-size: 24px;
                   line-height: 1.6;
-                  color: #24292e;
-                  background-color: #ffffff;
+                  color: #1a1a1a;
+                  background-color: rgba(255, 255, 255, 0.5);
                   padding: 32px;
                   overflow-x: hidden;
+                  min-height: 100vh;
                 }
                 h1 {
                   font-size: 36px;
                   font-weight: bold;
                   margin: 24px 0 16px 0;
-                  color: #24292e;
+                  color: #000000;
                 }
                 h2 {
                   font-size: 32px;
                   font-weight: bold;
                   margin: 20px 0 12px 0;
-                  color: #24292e;
+                  color: #000000;
                 }
                 h3 {
                   font-size: 28px;
                   font-weight: 600;
                   margin: 16px 0 8px 0;
-                  color: #24292e;
+                  color: #1a1a1a;
                 }
                 h4, h5, h6 {
                   font-size: 26px;
                   font-weight: 600;
                   margin: 12px 0 8px 0;
-                  color: #24292e;
+                  color: #1a1a1a;
                 }
                 p {
                   margin: 16px 0;
-                  color: #586069;
+                  color: #1a1a1a;
+                  font-size: 28px;
                 }
                 ul, ol {
                   margin: 16px 0;
                   padding-left: 48px;
-                  color: #586069;
+                  color: #1a1a1a;
                 }
                 li {
                   margin: 8px 0;
+                  font-size: 28px;
                 }
                 code {
-                  background-color: #f6f8fa;
-                  color: #24292e;
+                  background-color: rgba(246, 248, 250, 0.8);
+                  color: #000000;
                   padding: 4px 12px;
                   border-radius: 8px;
                   font-family: 'Courier New', monospace;
                   font-size: 22px;
                 }
                 pre {
-                  background-color: #f6f8fa;
-                  color: #24292e;
+                  background-color: rgba(246, 248, 250, 0.8);
+                  color: #000000;
                   padding: 24px;
                   border-radius: 12px;
                   overflow-x: auto;
@@ -178,8 +190,9 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
                   border-left: 8px solid #0366d6;
                   padding-left: 32px;
                   margin: 16px 0;
-                  color: #586069;
+                  color: #1a1a1a;
                   font-style: italic;
+                  font-size: 28px;
                 }
                 a {
                   color: #0366d6;
@@ -206,7 +219,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
                   text-align: left;
                 }
                 th {
-                  background-color: #f6f8fa;
+                  background-color: rgba(246, 248, 250, 0.9);
                   font-weight: 600;
                 }
                 hr {
@@ -217,7 +230,9 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
               </style>
             </head>
             <body>
-              ${html}
+              <div class="content-wrapper">
+                ${html}
+              </div>
             </body>
           </html>
         `;
@@ -276,7 +291,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
       {/* Error indicator */}
       {error && (
         <View style={[StyleSheet.absoluteFill, styles.errorContainer]}>
-          <Ionicons name="alert-circle" size={24} color={theme.colors.error || '#ff4444'} />
+          <Ionicons name="alert-circle" size={24} color="#ff4444" />
           <View style={{ marginTop: 8 }}>
             <Ionicons name="document-text-outline" size={16} color={theme.colors.textSecondary} />
           </View>
@@ -290,13 +305,13 @@ const styles = StyleSheet.create({
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'transparent',
     zIndex: 10,
   },
   errorContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'transparent',
     zIndex: 10,
   },
 });
