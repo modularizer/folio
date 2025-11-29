@@ -1,11 +1,21 @@
 # Folio
+![docs/demo.png](docs/demo.png)
 
 Build a configurable portfolio from your public github projects.
 
-
 ### Sample
-![docs/demo.png](docs/demo.png)
 see [sample.html](sample.html) or [github.com/modularizer.github.io](github.com/modularizer.github.io) which was used to build https://torinhalsted.com
+
+
+### Try it live!
+Visit https://torinhalsted.com/folio
+
+## Quickstart (if you don't want to do much customization)
+### Basic 
+1. Make a github repo to host a free GitHubPages Site
+    - name the repo `yourusername.github.io` (using your actual name) if you want to create a site at your pages root https://youusername.github.io
+    - if you name the repo anything else, e.g. `folio`, your site will be at https://youusername.github.io/folio
+2. Add an `index.html` file in the project root which imports the bundle from CDN or self-hosted
 ```html
 <!DOCTYPE html>
 <html>
@@ -17,14 +27,6 @@ see [sample.html](sample.html) or [github.com/modularizer.github.io](github.com/
 ></script>
 </html>
 ```
-### Try it live!
-
-## Quickstart (if you don't want to do much customization)
-### Basic 
-1. Make a github repo to host a free GitHubPages Site
-    - name the repo `yourusername.github.io` (using your actual name) if you want to create a site at your pages root https://youusername.github.io
-    - if you name the repo anything else, e.g. `folio`, your site will be at https://youusername.github.io/folio
-2. Add an `index.html` file in the project root which imports the bundle from CDN or self-hosted
 
 ### CDN Options (stays up-to-date with code pushes)
 

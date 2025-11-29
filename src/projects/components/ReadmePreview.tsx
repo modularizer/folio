@@ -77,17 +77,19 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
           (match, fullMatch, altOrText, url) => {
             const trimmedUrl = url.trim();
             
-            // Skip if URL already starts with http://, https://, ./, or ../
-            if (/^(https?:\/\/|\.\/|\.\.\/|\/)/.test(trimmedUrl)) {
+            // Skip if URL already starts with http://, https://
+            if (/^(https?:\/\/)/.test(trimmedUrl)) {
               return fullMatch;
             }
             
             // Prepend ./ to make it explicitly relative, then resolve to absolute URL
             const relativePath = `${baseUrl}/${trimmedUrl}`;
             const resolvedUrl = new URL(relativePath, baseUrl).href;
+
+            console.log('replacing', url, resolvedUrl);
             
             // Return the match with resolved URL
-            return fullMatch.replace(url, resolvedUrl);
+            return fullMatch.replaceAll(url, resolvedUrl);
           }
         );
         
