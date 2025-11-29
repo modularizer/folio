@@ -120,6 +120,14 @@ function parseConfig(): {
     const dataBackground = script.getAttribute('data-background');
     basePath = getBasePath(script);
     
+    console.log('[bundle-entry] Found script tag with attributes:', {
+      dataInit,
+      dataUsername,
+      dataToken: dataToken ? '***' : undefined,
+      dataTheme,
+      dataBackground,
+    });
+    
     // Parse query parameters from script src URL
     const scriptSrc = script.src;
     if (scriptSrc) {
@@ -219,10 +227,20 @@ function waitForDOM(callback: () => void) {
  * Apply background to body element
  */
 function applyBodyBackground(background: string | undefined) {
-  if (!background || typeof window === 'undefined') return;
+  if (!background || typeof window === 'undefined') {
+    console.warn('[bundle-entry] applyBodyBackground: no background or window undefined', { background, hasWindow: typeof window !== 'undefined' });
+    return;
+  }
   
   const body = document.body;
-  if (!body) return;
+  if (!body) {
+    console.warn('[bundle-entry] applyBodyBackground: body not available yet');
+    // Try again after a short delay
+    setTimeout(() => applyBodyBackground(background), 100);
+    return;
+  }
+  
+  console.log('[bundle-entry] applyBodyBackground: applying to body', background);
   
   // Check if it's a URL (starts with http, https, or /) or a relative path
   // If it looks like a color (starts with # or rgb), use backgroundColor instead
@@ -231,6 +249,7 @@ function applyBodyBackground(background: string | undefined) {
   if (isColor) {
     body.style.backgroundColor = background;
     body.style.backgroundImage = 'none';
+    console.log('[bundle-entry] Applied background color:', background);
   } else {
     // It's an image URL/path
     body.style.backgroundImage = `url('${background}')`;
@@ -241,6 +260,7 @@ function applyBodyBackground(background: string | undefined) {
     body.style.minHeight = '100vh';
     // Clear backgroundColor if it was set
     body.style.backgroundColor = 'transparent';
+    console.log('[bundle-entry] Applied background image:', background);
   }
 }
 
@@ -251,9 +271,18 @@ function initializeApp() {
   // Parse configuration
   const config = parseConfig();
   
+  console.log('[bundle-entry] Parsed config:', {
+    background: config.background,
+    theme: config.theme,
+    shouldInit: config.shouldInit,
+  });
+  
   // Apply background to body element if provided (always apply, even if not initializing)
   if (config.background) {
+    console.log('[bundle-entry] Applying background to body:', config.background);
     applyBodyBackground(config.background);
+  } else {
+    console.warn('[bundle-entry] No background found in config');
   }
 
   // Only initialize if init flag is set
@@ -320,6 +349,33 @@ function renderApp(container: HTMLElement, config: ReturnType<typeof parseConfig
     background: config.background ? '***' : undefined,
   });
 }
+
+// Apply background immediately if available (before DOM ready)
+// This ensures it's applied as early as possible
+(function applyBackgroundEarly() {
+  const script = findBundleScript();
+  if (script) {
+    const dataBackground = script.getAttribute('data-background');
+    // Also check URL query params
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlBackground = urlParams.get('background');
+      const background = urlBackground || dataBackground;
+      if (background) {
+        console.log('[bundle-entry] Applying background early:', background);
+        // Try to apply immediately
+        if (document.body) {
+          applyBodyBackground(background);
+        } else {
+          // Wait for body and apply
+          waitForDOM(() => applyBodyBackground(background));
+        }
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+})();
 
 // Wait for DOM to be ready before initializing
 waitForDOM(initializeApp);
