@@ -83,7 +83,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
             }
             
             // Prepend ./ to make it explicitly relative, then resolve to absolute URL
-            const relativePath = `./${trimmedUrl}`;
+            const relativePath = `${baseUrl}/${trimmedUrl}`;
             const resolvedUrl = new URL(relativePath, baseUrl).href;
             
             // Return the match with resolved URL
