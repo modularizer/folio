@@ -86,7 +86,10 @@ export function useRouter() {
     
     // Add base path back to the resolved path
     const basePath = getBasePath();
-    const fullResolvedPath = basePath ? basePath + resolvedPath : resolvedPath;
+    // Normalize paths to avoid double slashes
+    // Remove trailing slash from basePath and ensure resolvedPath starts with /
+    const normalizedBasePath = basePath ? basePath.replace(/\/+$/, '') : '';
+    const fullResolvedPath = normalizedBasePath + resolvedPath;
     
     let url = fullResolvedPath;
     if (searchParams && Object.keys(searchParams).length > 0) {
