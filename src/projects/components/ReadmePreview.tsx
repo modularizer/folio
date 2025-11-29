@@ -67,7 +67,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
         // Build base URL for resolving relative links
         // Format: https://raw.githubusercontent.com/owner/repo/refs/heads/branch/
         const [owner, repo] = repoPath.split('/');
-        const baseUrl = `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/`;
+        const baseUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@latest/`;
         
         // Process markdown to resolve relative links and images
         // Find links and images that don't start with http://, https://, or ./

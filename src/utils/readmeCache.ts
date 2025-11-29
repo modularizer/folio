@@ -11,7 +11,7 @@ export const buildReadmeUrl = (repoPath: string, branch: string): string => {
   if (!owner || !repo) {
     throw new Error(`Invalid repo path: ${repoPath}`);
   }
-  return `https://raw.githubusercontent.com/${owner}/${repo}/refs/heads/${branch}/README.md`;
+  return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@latest/README.md`;
 };
 
 const fetchWithCache = (url: string): Promise<string> => {
