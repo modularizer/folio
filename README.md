@@ -15,14 +15,45 @@ see https://github.com/modularizer/modularizer.github.io which was used to build
     - name the repo `yourusername.github.io` (using your actual name) if you want to create a site at your pages root https://youusername.github.io
     - if you name the repo anything else, e.g. `folio`, your site will be at https://youusername.github.io/folio
 2. Add an `index.html` file in the project root which imports the bundle from CDN or self-hosted
-    ```html
-    <!DOCTYPE html>
-    <html lang="en">
-    <script src="https://cdn.jsdelivr.net/gh/modularizer/folio@master/dist/folio.bundle.js" 
-            data-init="true" 
-            data-username="subdomain"></script>
-    </html>
-    ```
+
+### CDN Options (stays up-to-date with code pushes)
+
+**Option 1: GitHub Pages (Recommended - Always Up-to-Date)**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://modularizer.github.io/folio/dist/folio.bundle.js" 
+        data-init="true" 
+        data-username="subdomain"></script>
+</html>
+```
+✅ **Best for staying current**: Auto-deploys on every push via GitHub Actions  
+✅ **Fast & reliable**: Served from GitHub's CDN  
+✅ **Free**: No setup required  
+📝 **Setup**: Enable GitHub Pages in repo settings, use [`.github/workflows/deploy-bundle.yml`](.github/workflows/deploy-bundle.yml)
+
+**Option 2: jsdelivr (with commit hash for latest)**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://cdn.jsdelivr.net/gh/modularizer/folio@latest/dist/folio.bundle.js" 
+        data-init="true" 
+        data-username="subdomain"></script>
+</html>
+```
+⚠️ **Note**: `@latest` may have caching delays. For guaranteed latest, use specific commit hash: `@abc123def456`
+
+**Option 3: npm + unpkg (if published to npm)**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://unpkg.com/@modularizer/folio-bundle@latest/dist/folio.bundle.js" 
+        data-init="true" 
+        data-username="subdomain"></script>
+</html>
+```
+📦 Requires publishing to npm first
+
 **NOTE:** 
 - Use `data-username="subdomain"` to auto-detect username from github.io subdomain (e.g., `modularizer.github.io` → `modularizer`)
 - For custom domains, set explicitly: `data-username="yourusername"`
