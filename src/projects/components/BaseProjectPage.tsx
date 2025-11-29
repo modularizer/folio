@@ -524,6 +524,9 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
     page: {
       width: '100%',
       maxWidth: 920,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderRadius: 20,
+      padding: screenWidth > 600 ? 32 : 20,
     },
     backButton: {
       marginBottom: 24,

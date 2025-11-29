@@ -102,7 +102,7 @@ export default function ProjectDetailScreen() {
     <BackgroundWrapper 
       background={theme.background} 
       style={styles.container}
-      overlayOpacity={0.7}
+      overlayOpacity={0}
     >
       {detailPage}
     </BackgroundWrapper>

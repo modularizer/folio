@@ -83,7 +83,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
             }
             
             // Prepend ./ to make it explicitly relative, then resolve to absolute URL
-            const relativePath = `${baseUrl}/${trimmedUrl}`;
+            const relativePath = `${baseUrl}${trimmedUrl}`;
             const resolvedUrl = new URL(relativePath, baseUrl).href;
 
             console.log('replacing', url, resolvedUrl);
@@ -168,7 +168,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
                   font-size: 28px;
                 }
                 code {
-                  background-color: rgba(246, 248, 250, 0.8);
+                  background-color: rgba(246, 248, 250, 0.4);
                   color: #000000;
                   padding: 4px 12px;
                   border-radius: 8px;
@@ -176,7 +176,7 @@ export const ReadmePreview: React.FC<ReadmePreviewProps> = ({
                   font-size: 22px;
                 }
                 pre {
-                  background-color: rgba(246, 248, 250, 0.8);
+                  background-color: rgba(246, 248, 250, 0.4);
                   color: #000000;
                   padding: 24px;
                   border-radius: 12px;
