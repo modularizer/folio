@@ -5,7 +5,7 @@ Build a configurable portfolio from your public github projects.
 
 ### Sample
 ![docs/demo.png](docs/demo.png)
-see https://github.com/modularizer/modularizer.github.io which was used to build https://modularizer.github.io/
+see [sample.html](sample.html) or [github.com/modularizer.github.io](github.com/modularizer.github.io) which was used to build https://torinhalsted.com
 ```html
 <!DOCTYPE html>
 <html>
