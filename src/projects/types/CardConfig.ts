@@ -82,6 +82,7 @@ export const defaultCardConfigs: Record<CardLayoutMode, {
     columns: 1,
     cardWidth: 0, // Full width
     imageHeight: 120,
+      verticalGap: 10,
     cardHeight: 95, // Reduced height for list mode
     fontSize: {
       title: 18,
@@ -95,9 +96,9 @@ export const defaultCardConfigs: Record<CardLayoutMode, {
     cardHeight: 300, // Reduced height
     minWidth: 280,
     maxWidth: 500,
-      minGap: 15,
+      minGap: 35,
       maxGap: 60,
-      targetGap: 20,
+      targetGap: 40,
       verticalGap: 20,
     fontSize: {
       title: 16,

@@ -1,5 +1,5 @@
 import React, { useMemo, createContext, useContext, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator, TextInput, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator, TextInput, Dimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCardLayout } from '@/contexts/CardLayoutContext';
@@ -173,6 +173,12 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({
   const { layoutMode } = useCardLayout();
   const screenWidth = Dimensions.get('window').width;
   const renderStartTimeRef = useRef<number | null>(null);
+  
+  // Glass morphism styles for web
+  const glassStyle = Platform.OS === 'web' ? {
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+  } : {};
 
   const visibleProjects = useMemo(() => {
     return projects.filter((source) => {
@@ -320,7 +326,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({
     searchBarContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Glass effect with dark background
       borderRadius: 8,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -409,7 +415,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({
           {(onSearchChange || showLayoutToggle) && (
             <View style={styles.controlsRow}>
               {onSearchChange && (
-                <View style={styles.searchBarContainer}>
+                <View style={[styles.searchBarContainer, glassStyle]}>
                   <Ionicons
                     name="search"
                     size={18}

@@ -111,7 +111,7 @@ export function BundleApp({ githubUsername, githubToken, theme, basePath }: Bund
   if (!githubUsername && !hasUsernameInRoute) {
     console.log('[BundleApp] Showing UsernameInput');
     return (
-      <ThemeProvider>
+      <ThemeProvider initialTheme={theme}>
         <View style={styles.container}>
           <UsernameInput />
         </View>
@@ -123,7 +123,7 @@ export function BundleApp({ githubUsername, githubToken, theme, basePath }: Bund
 
   // Use the same providers as app/_layout.tsx
   return (
-    <ThemeProvider>
+    <ThemeProvider initialTheme={theme}>
       <CardLayoutProvider>
         <View style={styles.container}>
           <AppRouter />

@@ -6,7 +6,17 @@ Build a configurable portfolio from your public github projects.
 ### Sample
 ![docs/demo.png](docs/demo.png)
 see https://github.com/modularizer/modularizer.github.io which was used to build https://modularizer.github.io/
-
+```html
+<!DOCTYPE html>
+<html>
+<script src="https://cdn.jsdelivr.net/gh/modularizer/folio@latest/dist/folio.bundle.js"
+        data-init="true"
+        data-username="modularizer"
+        data-token="ghp_......"
+        data-background="https://images.unsplash.com/photo-1470115636492-6d2b56f9146d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+></script>
+</html>
+```
 ### Try it live!
 
 ## Quickstart (if you don't want to do much customization)

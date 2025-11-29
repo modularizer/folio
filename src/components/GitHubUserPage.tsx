@@ -550,7 +550,7 @@ export const GitHubUserPage: React.FC<GitHubUserPageProps> = ({
       return <>{renderLoading()}</>;
     }
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' }}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={{ marginTop: 16, fontSize: 16, color: theme.colors.textSecondary }}>Loading GitHub profile...</Text>
       </View>

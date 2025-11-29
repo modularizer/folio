@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { UserProfile } from '@/user/profile';
@@ -93,6 +94,12 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
     return match ? match[1] : 'GitHub';
   };
 
+  // Glass morphism styles for web
+  const glassStyle = Platform.OS === 'web' ? {
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+  } : {};
+
   const styles = StyleSheet.create({
     header: {
       marginBottom: 8, // Reduced spacing below header
@@ -108,7 +115,7 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
       paddingHorizontal: screenWidth > 768 ? 24 : 16, // Keep padding on all screens
       paddingTop: screenWidth > 768 ? 14 : 10,
       paddingBottom: screenWidth > 1000 ? 8 : (screenWidth > 768 ? 14 : 10), // Less padding on bottom for wide screens with stats
-      backgroundColor: theme.colors.surface,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Glass effect with dark background
       borderRadius: 12, // Keep border radius on all screens
       // Beveled effect - outer border
       borderWidth: 1,
@@ -234,7 +241,7 @@ export const PortfolioHeader: React.FC<PortfolioHeaderProps> = ({
   return (
     <View style={[styles.header, style]}>
       {/* Top row: Name, Search (on wide screens), and Social Links */}
-      <View style={styles.headerTop}>
+      <View style={[styles.headerTop, glassStyle]}>
         <View style={styles.headerTopLeft}>
           {displayAvatarUrl && (
             <View style={styles.avatarContainer}>

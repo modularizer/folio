@@ -12,7 +12,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCardLayout } from '@/contexts/CardLayoutContext';
-import { BackgroundWrapper } from './BackgroundWrapper';
 import { PortfolioHeader } from './PortfolioHeader';
 import { ProjectsGrid, ProjectSource } from './ProjectsGrid';
 import { IconLabel } from './IconLabel';
@@ -273,7 +272,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
     },
     stickyHeader: {
       position: 'fixed',
@@ -281,7 +280,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
       left: 0,
       right: 0,
       zIndex: 1000,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
       paddingHorizontal: screenWidth > 768 ? 8 : 4, // Minimal horizontal padding
       paddingBottom: 0,
       paddingTop: 8,
@@ -342,7 +341,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
     languageTag: {
       paddingHorizontal: 10,
       paddingVertical: 4,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)', // Glass effect with dark background
       borderRadius: 6,
       borderWidth: 1,
       borderColor: theme.colors.primary,
@@ -370,7 +369,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
       left: 0,
       right: 0,
       zIndex: 999,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
       paddingHorizontal: screenWidth > 768 ? 40 : 20,
       paddingRight: 5,
       paddingTop: 20, // Reduced from 20
@@ -393,7 +392,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
     projectsSection: {
       paddingHorizontal: screenWidth > 768 ? 40 : 20,
       paddingTop: 40, // Add space above projects grid to prevent cards from being cut off
-      paddingBottom: 0,
+      paddingBottom: 300, // Extra space at end to see background image
       overflow: 'visible', // Ensure cards aren't clipped
     },
     errorContainer: {
@@ -441,11 +440,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
   }, [profile?.name, avatarUrl]);
 
   return (
-    <BackgroundWrapper
-      background={background || profile?.background || theme.background}
-      style={[styles.container, style]}
-      overlayOpacity={0.7}
-    >
+    <View style={[styles.container, style]}>
       {/* Fixed Main Header - Outside ScrollView */}
       <View style={styles.stickyHeader}>
         <PortfolioHeader
@@ -685,7 +680,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
           </View>
         )}
       </ScrollView>
-    </BackgroundWrapper>
+    </View>
   );
 };
 

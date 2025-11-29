@@ -70,7 +70,7 @@ export const SoftwareProjectCard: React.FC<SoftwareProjectCardProps> = ({
   const styles = StyleSheet.create({
     card: {
       width: cardWidth,
-      backgroundColor: theme.colors.cardBackground,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)', // Glass effect with dark background
       borderRadius: 12,
       overflow: 'hidden',
       marginBottom: 20,

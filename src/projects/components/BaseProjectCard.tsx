@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -212,16 +213,26 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
     return tags;
   }, [project.tags, project.githubLanguages, project.githubLanguagesByCommits]);
   
+  // Glass morphism styles for web
+  const glassStyle = Platform.OS === 'web' ? {
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+  } : {};
+
   const styles = StyleSheet.create({
     card: {
       width: cardDimensions.width,
       height: project.cardConfig?.height || defaultConfig.cardHeight, // Use standard height unless overridden
-      backgroundColor: theme.colors.cardBackground,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)', // Glass effect with dark background
       borderRadius: layoutMode === 'list' ? 8 : 12,
       overflow: 'visible', // Changed to 'visible' to allow bookmark icon to show
       marginBottom: 20,
       borderWidth: 1,
       borderColor: borderColor || theme.colors.border,
+      ...(layoutMode === 'list' && { 
+        maxWidth: 950,
+        alignSelf: 'center', // Center the card when it hits max width
+      }), // Limit max width in list mode
       ...(layoutMode !== 'list' && borderColor && {
         borderLeftWidth: 12,
         borderLeftColor: borderColor,
@@ -266,6 +277,8 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
       flexDirection: 'column',
       justifyContent: 'space-between',
       borderTopRightRadius: layoutMode === 'list' ? 8 : 12, // Match outer card border radius
+      overflow: 'hidden', // Prevent tags from escaping the card
+      minWidth: 0, // Allow flex children to shrink below their content size
     },
     statsOverlay: {
       position: 'absolute',
@@ -331,8 +344,9 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      flexShrink: 0,
+      flexShrink: 1, // Allow shrinking to prevent overflow
       flexWrap: 'wrap',
+      minWidth: 0, // Allow flex children to shrink below their content size
     },
     title: {
       fontSize: defaultConfig.fontSize.title,
@@ -360,6 +374,8 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
       gap: 6,
       flexShrink: 1,
       overflow: 'hidden',
+      minWidth: 0, // Allow flex children to shrink below their content size
+      maxWidth: '100%', // Ensure it doesn't exceed parent width
     },
     tag: {
       paddingHorizontal: 10,
@@ -390,7 +406,7 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, glassStyle]}
       onPress={onPress}
       activeOpacity={0.8}
     >

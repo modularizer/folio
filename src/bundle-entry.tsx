@@ -4,8 +4,17 @@
  * Auto-initializes the app when loaded via script tag with init=true parameter or data-init="true" attribute.
  * 
  * Supports configuration via:
- * - Query parameters: ?username=modularizer&init=true&token=...
- * - Data attributes: data-username="modularizer" data-init="true" data-token="..."
+ * - Query parameters: ?username=modularizer&init=true&token=...&theme=dark&background=...
+ * - Data attributes: data-username="modularizer" data-init="true" data-token="..." data-theme="dark" data-background="..."
+ * - URL query params (page-level): ?theme=light&background=assets/image.png
+ * 
+ * Theme options:
+ * - data-theme="light" or data-theme="dark" (or ?theme=light/dark)
+ * - Also checks body[data-theme] attribute
+ * 
+ * Background options:
+ * - data-background="color" or data-background="url(...)" (or ?background=...)
+ * - Can be a CSS color (e.g., "#ff0000", "rgba(255,0,0,0.5)") or image URL/path
  */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -87,6 +96,8 @@ function parseConfig(): {
   githubUsername?: string;
   githubToken?: string;
   basePath: string;
+  theme?: 'light' | 'dark';
+  background?: string;
 } {
   const script = findBundleScript();
   
@@ -95,6 +106,8 @@ function parseConfig(): {
   let githubUsername: string | undefined;
   let githubToken: string | undefined;
   let basePath = '';
+  let theme: 'light' | 'dark' | undefined;
+  let background: string | undefined;
   
   if (script) {
     // Check data attributes first
@@ -103,6 +116,8 @@ function parseConfig(): {
     
     const dataUsername = script.getAttribute('data-username');
     const dataToken = script.getAttribute('data-token');
+    const dataTheme = script.getAttribute('data-theme');
+    const dataBackground = script.getAttribute('data-background');
     basePath = getBasePath(script);
     
     // Parse query parameters from script src URL
@@ -126,6 +141,19 @@ function parseConfig(): {
         } else if (dataToken) {
           githubToken = dataToken;
         }
+        if (params.has('theme')) {
+          const themeParam = params.get('theme');
+          if (themeParam === 'light' || themeParam === 'dark') {
+            theme = themeParam;
+          }
+        } else if (dataTheme === 'light' || dataTheme === 'dark') {
+          theme = dataTheme;
+        }
+        if (params.has('background')) {
+          background = params.get('background') || undefined;
+        } else if (dataBackground) {
+          background = dataBackground;
+        }
       } catch (e) {
         console.warn('[bundle-entry] Failed to parse script URL:', e);
       }
@@ -137,7 +165,29 @@ function parseConfig(): {
       if (dataToken) {
         githubToken = dataToken;
       }
+      if (dataTheme === 'light' || dataTheme === 'dark') {
+        theme = dataTheme;
+      }
+      if (dataBackground) {
+        background = dataBackground;
+      }
     }
+  }
+  
+  // Also check URL query parameters (for page-level overrides)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('theme')) {
+      const themeParam = urlParams.get('theme');
+      if (themeParam === 'light' || themeParam === 'dark') {
+        theme = themeParam;
+      }
+    }
+    if (urlParams.has('background')) {
+      background = urlParams.get('background') || background;
+    }
+  } catch (e) {
+    // Ignore errors parsing URL
   }
   
   // Process username special keywords
@@ -148,6 +198,8 @@ function parseConfig(): {
     githubUsername,
     githubToken,
     basePath,
+    theme,
+    background,
   };
 }
 
@@ -164,11 +216,45 @@ function waitForDOM(callback: () => void) {
 }
 
 /**
+ * Apply background to body element
+ */
+function applyBodyBackground(background: string | undefined) {
+  if (!background || typeof window === 'undefined') return;
+  
+  const body = document.body;
+  if (!body) return;
+  
+  // Check if it's a URL (starts with http, https, or /) or a relative path
+  // If it looks like a color (starts with # or rgb), use backgroundColor instead
+  const isColor = background.startsWith('#') || background.startsWith('rgb');
+  
+  if (isColor) {
+    body.style.backgroundColor = background;
+    body.style.backgroundImage = 'none';
+  } else {
+    // It's an image URL/path
+    body.style.backgroundImage = `url('${background}')`;
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+    body.style.backgroundAttachment = 'fixed';
+    body.style.backgroundRepeat = 'no-repeat';
+    body.style.minHeight = '100vh';
+    // Clear backgroundColor if it was set
+    body.style.backgroundColor = 'transparent';
+  }
+}
+
+/**
  * Initialize the app
  */
 function initializeApp() {
   // Parse configuration
   const config = parseConfig();
+  
+  // Apply background to body element if provided (always apply, even if not initializing)
+  if (config.background) {
+    applyBodyBackground(config.background);
+  }
 
   // Only initialize if init flag is set
   if (!config.shouldInit) {
@@ -208,12 +294,20 @@ function initializeApp() {
 function renderApp(container: HTMLElement, config: ReturnType<typeof parseConfig>) {
   // Create React root and render
   const root = createRoot(container);
+  
+  // Build theme object if theme or background is provided
+  const themeConfig = config.theme || config.background ? {
+    name: config.theme,
+    background: config.background,
+  } : undefined;
+  
   root.render(
     <React.StrictMode>
       <BundleApp
         githubUsername={config.githubUsername}
         githubToken={config.githubToken}
         basePath={config.basePath}
+        theme={themeConfig}
       />
     </React.StrictMode>
   );
@@ -222,6 +316,8 @@ function renderApp(container: HTMLElement, config: ReturnType<typeof parseConfig
     githubUsername: config.githubUsername,
     githubToken: config.githubToken ? '***' : undefined,
     basePath: config.basePath,
+    theme: config.theme,
+    background: config.background ? '***' : undefined,
   });
 }
 
