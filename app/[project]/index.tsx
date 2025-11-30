@@ -44,25 +44,49 @@ export default function ProjectDetailScreen(props: ProjectDetailScreenProps = {}
       }
       try {
         setLoading(true);
+        console.log('[ProjectDetailScreen] Loading project with slug:', projectSlug);
+        
         // Ensure StorageManager is initialized before accessing it
         // If it's already initialized, this will return immediately
         await storageManager.initialize();
         let loadedProject = await storageManager.getProjectBySlug(projectSlug);
+        
+        console.log('[ProjectDetailScreen] StorageManager result:', { loadedProject: !!loadedProject });
 
         if (!loadedProject) {
+          console.log('[ProjectDetailScreen] Not found in storage, checking cache...');
           const cachedData = await getCachedProjectDataBySlug(projectSlug);
+          console.log('[ProjectDetailScreen] Cache result:', { cachedData: !!cachedData, cachedDataId: cachedData?.id });
+          
           if (cachedData) {
             const builder = getBuilderForProject(cachedData);
             loadedProject = {
               data: cachedData,
               builder,
             };
+            console.log('[ProjectDetailScreen] Created project from cache:', { id: cachedData.id, slug: cachedData.slug || cachedData.id });
+          } else {
+            // Try by ID if slug doesn't match
+            console.log('[ProjectDetailScreen] Not found by slug, trying by ID...');
+            const cachedById = await getCachedProjectData({ id: projectSlug });
+            if (cachedById) {
+              console.log('[ProjectDetailScreen] Found by ID:', cachedById.id);
+              const builder = getBuilderForProject(cachedById);
+              loadedProject = {
+                data: cachedById,
+                builder,
+              };
+            }
           }
         }
 
+        if (!loadedProject) {
+          console.warn('[ProjectDetailScreen] Project not found:', projectSlug);
+        }
+        
         setProject(loadedProject);
       } catch (error) {
-        console.error('Failed to load project:', error);
+        console.error('[ProjectDetailScreen] Failed to load project:', error);
       } finally {
         setLoading(false);
       }

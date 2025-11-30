@@ -7,30 +7,53 @@
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useRouter as useCustomRouter } from '@/utils/router';
+import { subscribeToPathChanges } from '@/utils/bundleNavigation';
+
+/**
+ * Normalize a path by ensuring it always has a trailing slash (except for empty string)
+ */
+function normalizePath(path: string): string {
+  if (!path) return '/';
+  if (path === '/') return '/';
+  return path.endsWith('/') ? path : path + '/';
+}
 
 /**
  * Get the base path from config
+ * Uses initialPathname if available (the path when bundle loaded), otherwise falls back to basePath
+ * Always returns with trailing slash (except for root "/" which stays "/")
  */
 function getBasePath(): string {
   if (typeof window !== 'undefined' && (window as any).__FOLIO_CONFIG__) {
-    return (window as any).__FOLIO_CONFIG__.basePath || '';
+    const config = (window as any).__FOLIO_CONFIG__;
+    // Prefer initialPathname (the actual path when bundle loaded) over basePath config
+    const path = config.initialPathname || config.basePath || '';
+    return normalizePath(path);
   }
-  return '';
+  return '/';
 }
 
 /**
  * Strip base path from pathname
+ * The base path is the path the page was on when the bundle initially loaded
  */
 function stripBasePath(pathname: string): string {
   const basePath = getBasePath();
-  if (!basePath) return pathname;
-  
-  // Remove base path prefix
-  if (pathname.startsWith(basePath)) {
-    const stripped = pathname.slice(basePath.length);
-    return stripped || '/';
+  if (!basePath) {
+    console.log('[stripBasePath] No base path, returning original:', pathname);
+    return pathname;
   }
   
+  // Remove base path prefix
+  // basePath always has trailing slash, so we can directly check startsWith
+  if (pathname.startsWith(basePath)) {
+    const stripped = pathname.slice(basePath.length);
+    const result = stripped || '/';
+    console.log('[stripBasePath] Stripped:', { pathname, basePath, result });
+    return result;
+  }
+  
+  console.log('[stripBasePath] Pathname does not start with base path:', { pathname, basePath });
   return pathname;
 }
 
@@ -115,8 +138,18 @@ export function useSegments(): string[] {
       setSegments(segs);
     };
 
+    // Listen to both popstate (browser back/forward) and bundle navigation
     window.addEventListener('popstate', updateSegments);
-    return () => window.removeEventListener('popstate', updateSegments);
+    const unsubscribe = subscribeToPathChanges((path) => {
+      console.log('[useSegments] Bundle navigation path change:', path);
+      // Update segments based on the actual window.location (which should already be updated)
+      updateSegments();
+    });
+    
+    return () => {
+      window.removeEventListener('popstate', updateSegments);
+      unsubscribe();
+    };
   }, []);
 
   return segments;
@@ -137,8 +170,18 @@ export function usePathname(): string {
       setPathname(stripped);
     };
 
+    // Listen to both popstate (browser back/forward) and bundle navigation
     window.addEventListener('popstate', updatePathname);
-    return () => window.removeEventListener('popstate', updatePathname);
+    const unsubscribe = subscribeToPathChanges((path) => {
+      console.log('[usePathname] Bundle navigation path change:', path);
+      // Update pathname based on the actual window.location (which should already be updated)
+      updatePathname();
+    });
+    
+    return () => {
+      window.removeEventListener('popstate', updatePathname);
+      unsubscribe();
+    };
   }, []);
 
   return pathname;

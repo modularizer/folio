@@ -407,7 +407,13 @@ export const BaseProjectCard: React.FC<BaseProjectCardProps> = ({
   return (
     <TouchableOpacity
       style={[styles.card, glassStyle]}
-      onPress={onPress}
+      onPress={(e) => {
+        // Prevent any default navigation behavior on web
+        if (Platform.OS === 'web' && e) {
+          e.preventDefault?.();
+        }
+        onPress();
+      }}
       activeOpacity={0.8}
     >
       <View style={styles.cardContent}>

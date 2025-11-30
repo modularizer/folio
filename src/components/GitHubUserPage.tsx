@@ -516,40 +516,67 @@ export const GitHubUserPage: React.FC<GitHubUserPageProps> = ({
     }
     
     // Mix GitHub projects with additional projects, respecting preferredIndex
-    const allProjectsWithIndex: Array<{ project: ProjectSource; index: number; isCustom: boolean }> = [];
+    // Custom projects with preferredIndex go to their specified positions
+    // GitHub projects fill in the remaining positions
     
-    // Add GitHub projects with their natural index
-    githubProjectSources.forEach((project, index) => {
-      allProjectsWithIndex.push({
-        project,
-        index,
-        isCustom: false,
-      });
-    });
+    // Separate custom projects with and without preferredIndex
+    const customWithIndex: Array<{ project: ProjectSource; index: number }> = [];
+    const customWithoutIndex: ProjectSource[] = [];
     
-    // Add custom projects with their preferredIndex (or append to end if not specified)
     (additionalProjects || []).forEach((project) => {
       const preferredIndex = 'data' in project && project.data.preferredIndex !== undefined
         ? project.data.preferredIndex
-        : githubProjectSources.length; // Default to end if not specified
+        : undefined;
       
-      allProjectsWithIndex.push({
-        project,
-        index: preferredIndex,
-        isCustom: true,
-      });
-    });
-    
-    // Sort by index, then by isCustom (GitHub projects first at same index)
-    allProjectsWithIndex.sort((a, b) => {
-      if (a.index !== b.index) {
-        return a.index - b.index;
+      if (preferredIndex !== undefined) {
+        customWithIndex.push({ project, index: preferredIndex });
+      } else {
+        customWithoutIndex.push(project);
       }
-      // If same index, GitHub projects come first
-      return a.isCustom ? 1 : -1;
     });
     
-    const merged = allProjectsWithIndex.map(item => item.project);
+    // Create a map of positions to custom projects
+    const positionMap = new Map<number, ProjectSource[]>();
+    customWithIndex.forEach(({ project, index }) => {
+      if (!positionMap.has(index)) {
+        positionMap.set(index, []);
+      }
+      positionMap.get(index)!.push(project);
+    });
+    
+    // Build the merged array
+    const merged: ProjectSource[] = [];
+    let githubIndex = 0;
+    
+    // Find the maximum position we need to consider
+    const maxPosition = Math.max(
+      githubProjectSources.length + customWithIndex.length - 1,
+      ...Array.from(positionMap.keys())
+    );
+    
+    // Iterate through positions and place projects
+    for (let position = 0; position <= maxPosition || githubIndex < githubProjectSources.length; position++) {
+      // Place custom projects at this position if any
+      const customAtPosition = positionMap.get(position);
+      if (customAtPosition) {
+        merged.push(...customAtPosition);
+      }
+      
+      // If this position doesn't have a custom project, fill with GitHub project
+      if (!customAtPosition && githubIndex < githubProjectSources.length) {
+        merged.push(githubProjectSources[githubIndex]);
+        githubIndex++;
+      }
+    }
+    
+    // Add any remaining GitHub projects
+    while (githubIndex < githubProjectSources.length) {
+      merged.push(githubProjectSources[githubIndex]);
+      githubIndex++;
+    }
+    
+    // Add custom projects without preferredIndex at the end
+    merged.push(...customWithoutIndex);
     
     console.log('[GitHubUserPage] Merged projects with preferredIndex:', {
       total: merged.length,
