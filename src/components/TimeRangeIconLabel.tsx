@@ -39,7 +39,7 @@ interface TimeRangeIconLabelProps {
 /**
  * Time Range Icon Label Component
  * 
- * Displays a date range (start → end) with a clock icon, using the same
+ * Displays a date range (start - end) with a clock icon, using the same
  * formatting logic as project cards (days ago format for recent dates).
  * 
  * @example
@@ -92,7 +92,7 @@ export const TimeRangeIconLabel: React.FC<TimeRangeIconLabelProps> = ({
     // Same date, just show once
     displayText = startDateInfo.text;
   } else if (startDateInfo.isDaysAgo && endDateInfo.isDaysAgo) {
-    // Both in "days ago" format - show as "older → newer days ago"
+    // Both in "days ago" format - show as "older - newer days ago"
     const older = Math.max(startDateInfo.daysAgo, endDateInfo.daysAgo);
     const newer = Math.min(startDateInfo.daysAgo, endDateInfo.daysAgo);
     if (older === newer) {
@@ -101,7 +101,7 @@ export const TimeRangeIconLabel: React.FC<TimeRangeIconLabelProps> = ({
       // Format the days ago text properly
       const olderText = older === 1 ? 'Yesterday' : `${older} days ago`;
       const newerText = newer === 1 ? 'Yesterday' : newer === 0 ? 'Today' : `${newer} days ago`;
-      displayText = `${olderText} → ${newerText}`;
+      displayText = `${olderText} - ${newerText}`;
     }
   } else if (!startDateInfo.isDaysAgo && !endDateInfo.isDaysAgo) {
     // Both are full dates - check if same month/year to consolidate
@@ -116,11 +116,11 @@ export const TimeRangeIconLabel: React.FC<TimeRangeIconLabelProps> = ({
       displayText = `${month} ${firstDay} - ${lastDay}, ${year}`;
     } else {
       // Different months/years - show both
-      displayText = `${startDateInfo.text} → ${endDateInfo.text}`;
+      displayText = `${startDateInfo.text} - ${endDateInfo.text}`;
     }
   } else {
-    // Mixed format - show both with arrow
-    displayText = `${startDateInfo.text} → ${endDateInfo.text}`;
+    // Mixed format - show both with dash
+    displayText = `${startDateInfo.text} - ${endDateInfo.text}`;
   }
 
   return (
