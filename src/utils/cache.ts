@@ -70,12 +70,13 @@ const isIndexedDBAvailable = (): boolean => {
 };
 
 /**
- * Get a cached value
+ * Get a cached value (even if expired)
  * 
  * @param key - Cache key
- * @returns Cached data or null if not found/expired
+ * @param allowExpired - If true, return expired entries instead of deleting them (default: false)
+ * @returns Cached data or null if not found (or expired if allowExpired is false)
  */
-export const getCache = async <T>(key: string): Promise<T | null> => {
+export const getCache = async <T>(key: string, allowExpired: boolean = false): Promise<T | null> => {
   if (!isIndexedDBAvailable()) {
     return null;
   }
@@ -93,9 +94,14 @@ export const getCache = async <T>(key: string): Promise<T | null> => {
     const age = now - entry.timestamp;
 
     if (age > entry.ttl) {
-      // Entry expired, delete it
-      await db.delete('cache', key);
-      return null;
+      if (allowExpired) {
+        // Return expired entry for fallback purposes
+        return entry.data as T;
+      } else {
+        // Entry expired, delete it
+        await db.delete('cache', key);
+        return null;
+      }
     }
 
     return entry.data as T;
@@ -308,51 +314,67 @@ export const cachedFetch = async <T = any>(
   try {
     response = await fetch(url, options);
   } catch (fetchError) {
-    // If fetch fails, try to get cached data with alternate auth status
+    // If fetch fails, try to get cached data (including expired) with alternate auth status
     // This helps when auth errors occur but we have cached data from previous requests
     if (hasAuth) {
-      // Try cache without auth
+      // Try cache without auth (including expired)
       const noAuthKey = getCacheKey(url, { method: options.method || 'GET' });
-      const noAuthCached = await getCache<T>(noAuthKey);
+      const noAuthCached = await getCache<T>(noAuthKey, true); // allowExpired = true
       if (noAuthCached !== null) {
-        console.log('[cachedFetch] Using cached data (no auth) after fetch error');
+        console.log('[cachedFetch] Using cached data (no auth, may be expired) after fetch error');
         return noAuthCached;
       }
     } else {
-      // Try cache with auth
+      // Try cache with auth (including expired)
       const authKey = getCacheKey(url, { method: options.method || 'GET', auth: 'true' });
-      const authCached = await getCache<T>(authKey);
+      const authCached = await getCache<T>(authKey, true); // allowExpired = true
       if (authCached !== null) {
-        console.log('[cachedFetch] Using cached data (with auth) after fetch error');
-        return authCached;
-      }
-    }
-    throw fetchError;
-  }
-
-  if (!response.ok) {
-    // For any error status, try to get cached data with alternate auth status
-    // This ensures we use cached data if available, even if the request fails
-    if (hasAuth) {
-      // Try cache without auth
-      const noAuthKey = getCacheKey(url, { method: options.method || 'GET' });
-      const noAuthCached = await getCache<T>(noAuthKey);
-      if (noAuthCached !== null) {
-        console.log(`[cachedFetch] Using cached data (no auth) after ${response.status} error`);
-        return noAuthCached;
-      }
-    } else {
-      // Try cache with auth
-      const authKey = getCacheKey(url, { method: options.method || 'GET', auth: 'true' });
-      const authCached = await getCache<T>(authKey);
-      if (authCached !== null) {
-        console.log(`[cachedFetch] Using cached data (with auth) after ${response.status} error`);
+        console.log('[cachedFetch] Using cached data (with auth, may be expired) after fetch error');
         return authCached;
       }
     }
     
-    // Only throw error if we have NO cached data available
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Also try current cache key with expired entries allowed
+    const currentCached = await getCache<T>(cacheKey, true); // allowExpired = true
+    if (currentCached !== null) {
+      console.log('[cachedFetch] Using cached data (may be expired) after fetch error');
+      return currentCached;
+    }
+    
+    throw fetchError;
+  }
+
+  if (!response.ok) {
+    const statusCode = response.status;
+    // For 401/402 or any error status, try to get cached data (including expired) with alternate auth status
+    // This ensures we use cached data if available, even if expired, when the request fails
+    if (hasAuth) {
+      // Try cache without auth (including expired)
+      const noAuthKey = getCacheKey(url, { method: options.method || 'GET' });
+      const noAuthCached = await getCache<T>(noAuthKey, true); // allowExpired = true
+      if (noAuthCached !== null) {
+        console.log(`[cachedFetch] Using cached data (no auth, may be expired) after ${statusCode} error`);
+        return noAuthCached;
+      }
+    } else {
+      // Try cache with auth (including expired)
+      const authKey = getCacheKey(url, { method: options.method || 'GET', auth: 'true' });
+      const authCached = await getCache<T>(authKey, true); // allowExpired = true
+      if (authCached !== null) {
+        console.log(`[cachedFetch] Using cached data (with auth, may be expired) after ${statusCode} error`);
+        return authCached;
+      }
+    }
+    
+    // Also try current cache key with expired entries allowed
+    const currentCached = await getCache<T>(cacheKey, true); // allowExpired = true
+    if (currentCached !== null) {
+      console.log(`[cachedFetch] Using cached data (may be expired) after ${statusCode} error`);
+      return currentCached;
+    }
+    
+    // Only throw error if we have NO cached data available (even expired)
+    throw new Error(`HTTP ${statusCode}: ${response.statusText}`);
   }
 
   // Parse response (assuming JSON)
