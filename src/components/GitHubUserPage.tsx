@@ -501,12 +501,66 @@ export const GitHubUserPage: React.FC<GitHubUserPageProps> = ({
     const projectsToUse = filteredProjects !== null && filteredProjects !== undefined ? filteredProjects : allProjects;
     const githubProjectSources: ProjectSource[] = projectsToUse || [];
     
+    console.log('[GitHubUserPage] Merging projects:', {
+      githubProjectsCount: githubProjectSources.length,
+      additionalProjectsCount: additionalProjects?.length || 0,
+      onlyGitHubProjects,
+      additionalProjects: additionalProjects?.map((p: any) => 
+        'data' in p ? { id: p.data.id, title: p.data.title, preferredIndex: p.data.preferredIndex } : p
+      ),
+    });
+    
     if (onlyGitHubProjects) {
+      console.log('[GitHubUserPage] onlyGitHubProjects is true, returning only GitHub projects');
       return githubProjectSources;
     }
     
-    // Mix GitHub projects with additional projects
-    return [...githubProjectSources, ...(additionalProjects || [])];
+    // Mix GitHub projects with additional projects, respecting preferredIndex
+    const allProjectsWithIndex: Array<{ project: ProjectSource; index: number; isCustom: boolean }> = [];
+    
+    // Add GitHub projects with their natural index
+    githubProjectSources.forEach((project, index) => {
+      allProjectsWithIndex.push({
+        project,
+        index,
+        isCustom: false,
+      });
+    });
+    
+    // Add custom projects with their preferredIndex (or append to end if not specified)
+    (additionalProjects || []).forEach((project) => {
+      const preferredIndex = 'data' in project && project.data.preferredIndex !== undefined
+        ? project.data.preferredIndex
+        : githubProjectSources.length; // Default to end if not specified
+      
+      allProjectsWithIndex.push({
+        project,
+        index: preferredIndex,
+        isCustom: true,
+      });
+    });
+    
+    // Sort by index, then by isCustom (GitHub projects first at same index)
+    allProjectsWithIndex.sort((a, b) => {
+      if (a.index !== b.index) {
+        return a.index - b.index;
+      }
+      // If same index, GitHub projects come first
+      return a.isCustom ? 1 : -1;
+    });
+    
+    const merged = allProjectsWithIndex.map(item => item.project);
+    
+    console.log('[GitHubUserPage] Merged projects with preferredIndex:', {
+      total: merged.length,
+      github: githubProjectSources.length,
+      additional: additionalProjects?.length || 0,
+      sorted: merged.map((p: any) => 
+        'data' in p ? { id: p.data.id, title: p.data.title, preferredIndex: p.data.preferredIndex } : p
+      ),
+    });
+    
+    return merged;
   }, [filteredProjects, allProjects, additionalProjects, onlyGitHubProjects]);
 
   // All layout styles have been moved to UserPortfolioPage component
@@ -519,8 +573,30 @@ export const GitHubUserPage: React.FC<GitHubUserPageProps> = ({
 
   const screenWidth = Dimensions.get('window').width;
   
+  // Get custom bio stats from window config
+  const customBioStats = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    
+    const config = (window as any).__FOLIO_CONFIG__;
+    if (!config || !config.customBioStats) {
+      return undefined;
+    }
+    
+    try {
+      const { createBioStatsFromData } = require('@/utils/customBioStats');
+      const bioStatsNode = createBioStatsFromData(config.customBioStats);
+      console.log('[GitHubUserPage] Created custom bio stats from config');
+      return bioStatsNode;
+    } catch (error) {
+      console.error('[GitHubUserPage] Failed to create custom bio stats:', error);
+      return undefined;
+    }
+  }, []);
+  
   // Prepare bio stats React node from GitHub data and aggregate stats
-  const bioStats = useMemo(() => {
+  const githubBioStats = useMemo(() => {
     if (!githubUserData && !aggregateStats) return undefined;
     
     // Use smaller, darker font for header stats on wide screens
@@ -543,6 +619,25 @@ export const GitHubUserPage: React.FC<GitHubUserPageProps> = ({
       />
     );
   }, [githubUserData, aggregateStats, screenWidth, theme]);
+  
+  // Merge GitHub bio stats with custom bio stats
+  const bioStats = useMemo(() => {
+    if (!customBioStats) {
+      return githubBioStats;
+    }
+    
+    if (!githubBioStats) {
+      return customBioStats;
+    }
+    
+    // Both exist - merge them
+    return (
+      <>
+        {githubBioStats}
+        {customBioStats}
+      </>
+    );
+  }, [githubBioStats, customBioStats]);
 
   // Initial loading state - only show full-screen loader if we don't have profile yet
   if (profileLoading && showLoading && !profile && !error) {

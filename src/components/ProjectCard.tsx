@@ -27,21 +27,42 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   }, [project.data]);
 
   const handlePress = useCallback(() => {
-    // Check if we're on a username route (starts with @)
-    // If so, construct the full path to preserve the username in the URL
-    const currentPath = pathname || '/';
-    const pathParts = currentPath.split('/').filter(p => p);
+    console.log('[ProjectCard] handlePress called:', { slug, pathname, projectId: project.data.id });
     
-    // If we're on a username route (e.g., /@modularizer), append the project slug
-    // Otherwise, use relative navigation
-    if (pathParts.length > 0 && pathParts[0].startsWith('@')) {
-      // We're on a username route, construct full path: /@username/project
-      router.push(`/${pathParts[0]}/${slug}`);
-    } else {
-      // Use relative navigation - append to current path
-      router.push(`./${slug}`);
-    }
-  }, [slug, router, pathname]);
+    // Ensure project is cached before navigation
+    cacheProjectData(project.data).then(() => {
+      console.log('[ProjectCard] Project cached, navigating to:', slug);
+      
+      // Check if we're on a username route (starts with @)
+      // If so, construct the full path to preserve the username in the URL
+      const currentPath = pathname || '/';
+      const pathParts = currentPath.split('/').filter(p => p);
+      
+      // If we're on a username route (e.g., /@modularizer), append the project slug
+      // Otherwise, use relative navigation
+      if (pathParts.length > 0 && pathParts[0].startsWith('@')) {
+        // We're on a username route, construct full path: /@username/project
+        const targetPath = `/${pathParts[0]}/${slug}`;
+        console.log('[ProjectCard] Navigating to username route:', targetPath);
+        router.push(targetPath);
+      } else {
+        // Use relative navigation - append to current path
+        const targetPath = `./${slug}`;
+        console.log('[ProjectCard] Navigating to relative path:', targetPath);
+        router.push(targetPath);
+      }
+    }).catch((error) => {
+      console.error('[ProjectCard] Failed to cache project before navigation:', error);
+      // Still try to navigate even if caching fails
+      const currentPath = pathname || '/';
+      const pathParts = currentPath.split('/').filter(p => p);
+      if (pathParts.length > 0 && pathParts[0].startsWith('@')) {
+        router.push(`/${pathParts[0]}/${slug}`);
+      } else {
+        router.push(`./${slug}`);
+      }
+    });
+  }, [slug, router, pathname, project.data]);
 
   // Memoize the card to prevent re-renders when props haven't changed
   const card = useMemo(() => {

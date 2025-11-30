@@ -9,12 +9,24 @@ import { getCachedProjectDataBySlug } from '@/utils/projectCache';
 import { getBuilderForProject } from '@/projects/builders';
 import { GitHubUserPage } from '@/components';
 
-export default function ProjectDetailScreen() {
-  const { project: projectSlug } = useLocalSearchParams<{ project: string }>();
+interface ProjectDetailScreenProps {
+  projectSlug?: string; // Optional prop for bundle mode
+}
+
+export default function ProjectDetailScreen(props: ProjectDetailScreenProps = {}) {
+  const { projectSlug: propProjectSlug } = props;
+  const params = useLocalSearchParams<{ project: string }>();
+  const projectSlug = propProjectSlug || params.project;
   const router = useRouter();
   const { theme } = useTheme();
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  
+  console.log('[ProjectDetailScreen] Loading project:', { 
+    propProjectSlug, 
+    paramsProject: params.project, 
+    finalProjectSlug: projectSlug 
+  });
 
   // If the "project" parameter starts with @, it's actually a username route
   // Redirect to GitHub user page

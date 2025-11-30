@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { GitHubUserPage } from '@/components';
+import { convertCustomProjectsToProjects } from '@/utils/customProjects';
+import { Project } from '@/projects/types';
 
 /**
  * Example route for displaying a GitHub user's portfolio.
@@ -18,6 +20,39 @@ export default function GitHubUserRoute() {
 
   console.log('[GitHubUserRoute] Received params:', { username });
 
+  // Get custom projects from window config (set by BundleApp)
+  const customProjects = useMemo(() => {
+    if (typeof window === 'undefined') {
+      console.log('[GitHubUserRoute] window is undefined, returning empty array');
+      return [];
+    }
+
+    const config = (window as any).__FOLIO_CONFIG__;
+    console.log('[GitHubUserRoute] Reading from window config:', {
+      hasConfig: !!config,
+      hasCustomProjects: !!(config && config.customProjects),
+      customProjectsCount: config?.customProjects?.length || 0,
+      customProjects: config?.customProjects,
+    });
+    
+    if (!config || !config.customProjects) {
+      console.log('[GitHubUserRoute] No custom projects in config, returning empty array');
+      return [];
+    }
+
+    try {
+      const projects = convertCustomProjectsToProjects(config.customProjects);
+      console.log('[GitHubUserRoute] Converted custom projects:', {
+        count: projects.length,
+        projects: projects.map(p => ({ id: p.data.id, title: p.data.title })),
+      });
+      return projects;
+    } catch (error) {
+      console.error('[GitHubUserRoute] Failed to convert custom projects:', error);
+      return [];
+    }
+  }, []);
+
   if (!username) {
     console.warn('[GitHubUserRoute] No username found in params, returning null');
     return null;
@@ -26,6 +61,7 @@ export default function GitHubUserRoute() {
   return (
     <GitHubUserPage
       username={username}
+      additionalProjects={customProjects}
       // Optional: Add GitHub token for higher rate limits
       // githubToken={process.env.EXPO_PUBLIC_GITHUB_TOKEN}
       

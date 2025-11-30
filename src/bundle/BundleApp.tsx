@@ -17,12 +17,24 @@ import HomeScreen from '../../app/index';
 import ProjectDetailScreen from '../../app/[project]/index';
 import GitHubUserRoute from '../../app/github/[username]';
 import { UsernameInput } from '@/components/UsernameInput';
+import { useLocalSearchParams } from 'expo-router';
 
 export interface BundleAppProps {
   githubUsername?: string;
   githubToken?: string;
   theme?: Partial<Theme>;
   basePath?: string;
+  customProjects?: any[];
+  customBioStats?: any[];
+}
+
+/**
+ * Wrapper for ProjectDetailScreen that ensures the project slug is passed correctly
+ * This is needed because useLocalSearchParams might not work correctly in bundle mode
+ */
+function ProjectDetailScreenWrapper({ projectSlug }: { projectSlug: string }) {
+  console.log('[ProjectDetailScreenWrapper] Rendering with projectSlug:', projectSlug);
+  return <ProjectDetailScreen projectSlug={projectSlug} />;
 }
 
 /**
@@ -64,15 +76,17 @@ function AppRouter() {
 
   // Route: /@username/:project - Specific user's project
   if (segments.length === 2 && segments[0].startsWith('@')) {
-    console.log('[AppRouter] Matched: /@username/:project -> ProjectDetailScreen');
-    return <ProjectDetailScreen />;
+    const projectSlug = segments[1];
+    console.log('[AppRouter] Matched: /@username/:project -> ProjectDetailScreen, project:', projectSlug);
+    return <ProjectDetailScreenWrapper projectSlug={projectSlug} />;
   }
 
   // Route: /:project - Default user's project (single segment, doesn't start with @)
   // IMPORTANT: This must come AFTER the @username check to avoid matching /@username
   if (segments.length === 1 && !segments[0].startsWith('@')) {
-    console.log('[AppRouter] Matched: /:project -> ProjectDetailScreen, project:', segments[0]);
-    return <ProjectDetailScreen />;
+    const projectSlug = segments[0];
+    console.log('[AppRouter] Matched: /:project -> ProjectDetailScreen, project:', projectSlug);
+    return <ProjectDetailScreenWrapper projectSlug={projectSlug} />;
   }
 
   // Fallback - render home
@@ -80,7 +94,7 @@ function AppRouter() {
   return <HomeScreen />;
 }
 
-export function BundleApp({ githubUsername, githubToken, theme, basePath }: BundleAppProps) {
+export function BundleApp({ githubUsername, githubToken, theme, basePath, customProjects, customBioStats }: BundleAppProps) {
   const pathname = usePathname();
   const segments = useSegments();
 
@@ -91,8 +105,16 @@ export function BundleApp({ githubUsername, githubToken, theme, basePath }: Bund
       githubUsername,
       githubToken,
       basePath: basePath || '',
+      customProjects,
+      customBioStats,
     };
-    console.log('[BundleApp] Config set:', { githubUsername, githubToken: githubToken ? '***' : undefined, basePath });
+    console.log('[BundleApp] Config set:', { 
+      githubUsername, 
+      githubToken: githubToken ? '***' : undefined, 
+      basePath,
+      customProjectsCount: customProjects?.length || 0,
+      customProjects: customProjects,
+    });
   }
 
   useEffect(() => {

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { GitHubUserPage } from '@/components';
 import { getGitHubUsername } from '@/utils/username';
 import { useTheme } from '@/contexts/ThemeContext';
+import { convertCustomProjectsToProjects } from '@/utils/customProjects';
+import { createBioStatsFromData, mergeBioStats } from '@/utils/customBioStats';
 
 /**
  * Default home page showing GitHub user portfolio.
@@ -27,6 +29,36 @@ export default function HomeScreen() {
     ? (window as any).__FOLIO_CONFIG__.githubToken
     : process.env.EXPO_PUBLIC_GITHUB_TOKEN;
   
+  // Get custom projects from window config (set by BundleApp)
+  const customProjects = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+
+    const config = (window as any).__FOLIO_CONFIG__;
+    console.log('[HomeScreen] Reading custom projects from window config:', {
+      hasConfig: !!config,
+      hasCustomProjects: !!(config && config.customProjects),
+      customProjectsCount: config?.customProjects?.length || 0,
+    });
+    
+    if (!config || !config.customProjects) {
+      return [];
+    }
+
+    try {
+      const projects = convertCustomProjectsToProjects(config.customProjects);
+      console.log('[HomeScreen] Converted custom projects:', {
+        count: projects.length,
+        projects: projects.map(p => ({ id: p.data.id, title: p.data.title })),
+      });
+      return projects;
+    } catch (error) {
+      console.error('[HomeScreen] Failed to convert custom projects:', error);
+      return [];
+    }
+  }, []);
+  
   // If no username found, show error or fallback
   if (!username) {
     return (
@@ -45,6 +77,7 @@ export default function HomeScreen() {
   return (
     <GitHubUserPage
       username={username}
+      additionalProjects={customProjects}
       // Optional: Add GitHub token for higher rate limits (5000/hour vs 60/hour)
       // Get token at: https://github.com/settings/tokens
       githubToken={githubToken}

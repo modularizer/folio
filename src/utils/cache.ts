@@ -286,27 +286,60 @@ export const cachedFetch = async <T = any>(
     cacheKeyParams.auth = 'true';
   }
   
+  // For POST/PUT/PATCH requests, include body hash in cache key
+  // This is important for GraphQL and other POST requests where body affects response
+  if (options.body && (options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH')) {
+    // Create a hash of the body for the cache key
+    // For strings, use them directly; for other types, stringify
+    let bodyString: string;
+    if (typeof options.body === 'string') {
+      bodyString = options.body;
+    } else if (options.body instanceof FormData || options.body instanceof URLSearchParams) {
+      // For FormData/URLSearchParams, we can't easily hash, so use a placeholder
+      // In practice, these are rarely cached anyway
+      bodyString = 'form-data';
+    } else {
+      bodyString = JSON.stringify(options.body);
+    }
+    
+    // Create a simple hash: use a combination of length and content
+    // This helps avoid collisions while keeping keys reasonable
+    // For short bodies, use the full body; for long ones, use first 100 chars + length
+    const bodyHash = bodyString.length <= 100
+      ? bodyString
+      : `${bodyString.substring(0, 100)}_len${bodyString.length}`;
+    
+    // Use the hash in the cache key (truncate to 200 chars max for key size)
+    cacheKeyParams.body = bodyHash.length > 200 ? bodyHash.substring(0, 200) : bodyHash;
+  }
+  
   const cacheKey = getCacheKey(url, cacheKeyParams);
 
   // Check cache first with current auth status
   const cached = await getCache<T>(cacheKey);
   if (cached !== null) {
+    console.log(`[cachedFetch] Cache HIT for ${url.substring(0, 50)}...`);
     return cached;
   }
+  
+  console.log(`[cachedFetch] Cache MISS for ${url.substring(0, 50)}... (key: ${cacheKey.substring(0, 80)}...)`);
 
   // If cache miss, try alternate auth status for public endpoints
   // (public GitHub API endpoints return same data regardless of auth)
-  const alternateKeyParams: Record<string, string> = {
-    method: options.method || 'GET',
-  };
-  if (!hasAuth) {
-    alternateKeyParams.auth = 'true';
-  }
-  const alternateCacheKey = getCacheKey(url, alternateKeyParams);
-  const alternateCached = await getCache<T>(alternateCacheKey);
-  if (alternateCached !== null) {
-    console.log('[cachedFetch] Using cached data with alternate auth status');
-    return alternateCached;
+  // Only do this for GET requests (POST requests with bodies are unique)
+  if (!options.body && (options.method === 'GET' || !options.method)) {
+    const alternateKeyParams: Record<string, string> = {
+      method: options.method || 'GET',
+    };
+    if (!hasAuth) {
+      alternateKeyParams.auth = 'true';
+    }
+    const alternateCacheKey = getCacheKey(url, alternateKeyParams);
+    const alternateCached = await getCache<T>(alternateCacheKey);
+    if (alternateCached !== null) {
+      console.log('[cachedFetch] Using cached data with alternate auth status');
+      return alternateCached;
+    }
   }
 
   // Cache miss - fetch from network
@@ -382,6 +415,7 @@ export const cachedFetch = async <T = any>(
 
   // Cache the response
   await setCache(cacheKey, data, freshness);
+  console.log(`[cachedFetch] Cached response for ${url.substring(0, 50)}... (TTL: ${freshness}ms)`);
 
   return data;
 };

@@ -861,16 +861,33 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
         )}
 
 
-        {project.githubUrl && (
+        {/* Show descriptionUrl/readmeUrl if provided, otherwise show GitHub README */}
+        {(project.descriptionUrl || project.readmeUrl || project.githubUrl) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>README Preview</Text>
+            <Text style={styles.sectionTitle}>
+              {project.descriptionUrl || project.readmeUrl ? 'Description' : 'README Preview'}
+            </Text>
             <View style={styles.readmeContainer}>
-              <ReadmePreview
-                githubUrl={project.githubUrl}
-                defaultBranch={(project as any).githubDefaultBranch}
-                imageUrl={project.imageUrl}
-                style={{ width: '100%', height: 800, borderRadius: 20 }}
-              />
+              {project.descriptionUrl ? (
+                <LiveUrlPreview
+                  url={project.descriptionUrl}
+                  imageUrl={project.imageUrl}
+                  style={{ width: '100%', height: 800, borderRadius: 20 }}
+                />
+              ) : project.readmeUrl ? (
+                <LiveUrlPreview
+                  url={project.readmeUrl}
+                  imageUrl={project.imageUrl}
+                  style={{ width: '100%', height: 800, borderRadius: 20 }}
+                />
+              ) : project.githubUrl ? (
+                <ReadmePreview
+                  githubUrl={project.githubUrl}
+                  defaultBranch={(project as any).githubDefaultBranch}
+                  imageUrl={project.imageUrl}
+                  style={{ width: '100%', height: 800, borderRadius: 20 }}
+                />
+              ) : null}
             </View>
           </View>
         )}

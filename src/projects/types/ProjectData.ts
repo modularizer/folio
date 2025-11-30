@@ -18,6 +18,18 @@ export interface ProjectData {
   imageUrl?: string;
   githubUrl?: string;
   liveUrl?: string;
+  /**
+   * URL to a description page or documentation to show at the bottom of the project detail page.
+   * If provided, this will be shown as a LiveUrlPreview instead of the README.
+   * Useful for non-GitHub projects that have documentation elsewhere.
+   */
+  descriptionUrl?: string;
+  /**
+   * URL to a README or markdown content to show at the bottom of the project detail page.
+   * If provided, this will be shown as a LiveUrlPreview instead of the README.
+   * Alternative to descriptionUrl - both can be provided, descriptionUrl takes precedence.
+   */
+  readmeUrl?: string;
   tags: string[];
   featured?: boolean;
   

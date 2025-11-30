@@ -1486,25 +1486,33 @@ const fetchPinnedRepos = async (
       }
     `;
 
-    const response = await fetch('https://api.github.com/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
+    // Use cachedFetch for GraphQL requests - cache key includes the query body
+    const data = await cachedFetch<{
+      data?: {
+        user?: {
+          pinnedItems?: {
+            nodes?: Array<{ nameWithOwner: string }>;
+          };
+        };
+      };
+      errors?: Array<{ message: string }>;
+    }>(
+      'https://api.github.com/graphql',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+        body: JSON.stringify({
+          query,
+          variables: { username },
+        }),
       },
-      body: JSON.stringify({
-        query,
-        variables: { username },
-      }),
-    });
+      CACHE_TTL.USER_REPOS // Use same TTL as repos since pinned repos change infrequently
+    );
 
-    if (!response.ok) {
-      console.warn(`Failed to fetch pinned repos for ${username}:`, response.status);
-      return [];
-    }
-
-    const data = await response.json();
     if (data.errors) {
       console.warn(`GraphQL errors fetching pinned repos:`, data.errors);
       return [];

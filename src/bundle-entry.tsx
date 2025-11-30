@@ -89,6 +89,377 @@ function processUsername(username: string | undefined): string | undefined {
 }
 
 /**
+ * Custom HTML element for defining portfolio projects
+ * 
+ * Usage:
+ *   <folio-project 
+ *     id="my-project"
+ *     title="My Project"
+ *     description="Project description"
+ *     tags="React,TypeScript,Node.js"
+ *     image-url="https://example.com/image.png"
+ *     live-url="https://example.com"
+ *     featured
+ *     template="Base"
+ *   ></folio-project>
+ */
+class FolioProjectElement extends HTMLElement {
+  private _projectData: any = null;
+
+  static get observedAttributes() {
+    return [
+      'id', 'title', 'description', 'tags', 'image-url', 'live-url', 
+      'github-url', 'featured', 'template', 'start-date', 'end-date',
+      'hours-worked', 'contributors', 'rating', 'preferred-index',
+      'description-url', 'readme-url'
+    ];
+  }
+
+  connectedCallback() {
+    // Parse project data from attributes when element is connected to DOM
+    console.log('[FolioProjectElement] connectedCallback called for element:', this.getAttribute('id'));
+    this._parseProjectData();
+  }
+
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    // Re-parse when any observed attribute changes
+    console.log('[FolioProjectElement] attributeChangedCallback:', name, oldValue, '->', newValue);
+    this._parseProjectData();
+  }
+
+  private _parseProjectData() {
+    const projectData: any = {};
+
+    // Required fields
+    const id = this.getAttribute('id');
+    const title = this.getAttribute('title');
+    const description = this.getAttribute('description');
+
+    console.log('[FolioProjectElement] Parsing attributes:', { id, title, description });
+
+    if (!id || !title || !description) {
+      console.warn('[FolioProjectElement] Missing required attributes (id, title, description)', { id, title, description });
+      this._projectData = null;
+      return;
+    }
+
+    projectData.id = id;
+    projectData.title = title;
+    projectData.description = description;
+
+    // Optional string fields
+    const imageUrl = this.getAttribute('image-url');
+    if (imageUrl) projectData.imageUrl = imageUrl;
+
+    const liveUrl = this.getAttribute('live-url');
+    if (liveUrl) projectData.liveUrl = liveUrl;
+    
+    const githubUrl = this.getAttribute('github-url');
+    if (githubUrl) projectData.githubUrl = githubUrl;
+    
+    const descriptionUrl = this.getAttribute('description-url');
+    if (descriptionUrl) projectData.descriptionUrl = descriptionUrl;
+    
+    const readmeUrl = this.getAttribute('readme-url');
+    if (readmeUrl) projectData.readmeUrl = readmeUrl;
+
+    const template = this.getAttribute('template');
+    if (template) projectData.template = template;
+
+    const startDate = this.getAttribute('start-date');
+    if (startDate) projectData.startDate = startDate;
+
+    const endDate = this.getAttribute('end-date');
+    if (endDate) projectData.endDate = endDate;
+
+    // Tags (comma-separated string -> array)
+    const tagsAttr = this.getAttribute('tags');
+    if (tagsAttr) {
+      projectData.tags = tagsAttr.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    } else {
+      projectData.tags = [];
+    }
+
+    // Boolean fields
+    projectData.featured = this.hasAttribute('featured');
+
+    // Number fields
+    const hoursWorked = this.getAttribute('hours-worked');
+    if (hoursWorked) {
+      const num = parseFloat(hoursWorked);
+      if (!isNaN(num)) projectData.hoursWorked = num;
+    }
+
+    const contributors = this.getAttribute('contributors');
+    if (contributors) {
+      const num = parseInt(contributors, 10);
+      if (!isNaN(num)) projectData.contributors = num;
+    }
+
+    const rating = this.getAttribute('rating');
+    if (rating) {
+      const num = parseFloat(rating);
+      if (!isNaN(num)) projectData.rating = num;
+    }
+
+    const preferredIndex = this.getAttribute('preferred-index');
+    if (preferredIndex) {
+      const num = parseInt(preferredIndex, 10);
+      if (!isNaN(num)) projectData.preferredIndex = num;
+    }
+
+    this._projectData = projectData;
+    console.log('[FolioProjectElement] Parsed projectData:', projectData);
+  }
+
+  get projectData(): any {
+    return this._projectData;
+  }
+}
+
+/**
+ * Register the custom element if not already registered
+ */
+function registerFolioProjectElement() {
+  if (typeof window === 'undefined' || typeof customElements === 'undefined') {
+    console.warn('[bundle-entry] Cannot register custom element: window or customElements not available');
+    return;
+  }
+
+  if (!customElements.get('folio-project')) {
+    try {
+      customElements.define('folio-project', FolioProjectElement);
+      console.log('[bundle-entry] Registered <folio-project> custom element');
+    } catch (e) {
+      console.error('[bundle-entry] Failed to register custom element:', e);
+    }
+  } else {
+    console.log('[bundle-entry] <folio-project> custom element already registered');
+  }
+}
+
+/**
+ * Parse custom bio stats from HTML
+ * Supports JSON in a script tag with id="folio-custom-bio-stats"
+ */
+function parseCustomBioStats(): any[] | undefined {
+  if (typeof document === 'undefined') {
+    return undefined;
+  }
+  
+  try {
+    const jsonScript = document.getElementById('folio-custom-bio-stats');
+    if (jsonScript && jsonScript.textContent) {
+      try {
+        const parsed = JSON.parse(jsonScript.textContent);
+        if (Array.isArray(parsed)) {
+          console.log('[bundle-entry] Parsed custom bio stats:', parsed);
+          return parsed;
+        }
+      } catch (e) {
+        console.warn('[bundle-entry] Failed to parse custom bio stats JSON:', e);
+      }
+    }
+  } catch (e) {
+    console.warn('[bundle-entry] Error accessing custom bio stats script tag:', e);
+  }
+  
+  return undefined;
+}
+
+/**
+ * Parse custom projects from HTML
+ * Supports:
+ * 1. JSON as inner content of the bundle script tag
+ * 2. Custom HTML elements using <folio-project>
+ */
+function parseCustomProjects(): any[] {
+  console.log('[bundle-entry] parseCustomProjects: Starting');
+  const projects: any[] = [];
+  
+  // Safety check - ensure document is available
+  if (typeof document === 'undefined') {
+    console.warn('[bundle-entry] parseCustomProjects: document is undefined');
+    return projects;
+  }
+
+  console.log('[bundle-entry] parseCustomProjects: document is available, proceeding');
+  
+  // Custom element should already be registered, but register it again if needed
+  registerFolioProjectElement();
+  
+  // Method 1: JSON in bundle script tag inner content
+  try {
+    // First try to get from captured content (stored before script executed)
+    let jsonContent: string | undefined = (window as any).__FOLIO_SCRIPT_CONTENT__;
+    
+    // Fallback: try to read from script tag directly
+    if (!jsonContent) {
+      const bundleScript = findBundleScript();
+      if (bundleScript) {
+        // Try innerHTML first (works even when script has src)
+        jsonContent = bundleScript.innerHTML?.trim();
+        // Fallback to textContent
+        if (!jsonContent) {
+          jsonContent = bundleScript.textContent?.trim();
+        }
+      }
+    }
+    
+    if (jsonContent) {
+      console.log('[bundle-entry] Found JSON content in bundle script tag:', jsonContent.substring(0, 100));
+      try {
+        const parsed = JSON.parse(jsonContent);
+        if (Array.isArray(parsed)) {
+          projects.push(...parsed);
+          console.log('[bundle-entry] Parsed', parsed.length, 'projects from JSON');
+        } else if (typeof parsed === 'object' && parsed !== null) {
+          projects.push(parsed);
+          console.log('[bundle-entry] Parsed 1 project from JSON');
+        }
+      } catch (e) {
+        console.warn('[bundle-entry] Failed to parse JSON from bundle script tag:', e, 'Content:', jsonContent.substring(0, 200));
+      }
+    } else {
+      console.log('[bundle-entry] No JSON content found in bundle script tag');
+    }
+  } catch (e) {
+    console.warn('[bundle-entry] Error accessing bundle script tag:', e);
+  }
+
+  // Method 2: Custom <folio-project> elements
+  try {
+    // Ensure custom element is registered before querying
+    registerFolioProjectElement();
+    
+    // Query for folio-project elements - use both querySelectorAll and getElementsByTagName
+    // to ensure we catch them even if custom elements aren't fully upgraded
+    const folioProjectElements = document.querySelectorAll('folio-project');
+    const folioProjectElementsByTag = document.getElementsByTagName('folio-project');
+    
+    // Use the longer list to ensure we get all elements
+    const allElements = folioProjectElements.length >= folioProjectElementsByTag.length 
+      ? Array.from(folioProjectElements)
+      : Array.from(folioProjectElementsByTag);
+    
+    console.log('[bundle-entry] Found', allElements.length, 'folio-project elements');
+    
+    allElements.forEach((element, index) => {
+      let projectData: any = null;
+      
+      console.log(`[bundle-entry] Processing folio-project element ${index + 1}:`, {
+        tagName: element.tagName,
+        id: element.getAttribute('id'),
+        title: element.getAttribute('title'),
+        isInstance: element instanceof FolioProjectElement,
+      });
+      
+      // Try to get from custom element instance first
+      if (element instanceof FolioProjectElement) {
+        projectData = element.projectData;
+        console.log(`[bundle-entry] Got projectData from custom element instance for element ${index + 1}`);
+      } else {
+        // Fallback: parse from attributes manually
+        // This handles cases where the element hasn't been upgraded yet
+        const id = element.getAttribute('id');
+        const title = element.getAttribute('title');
+        const description = element.getAttribute('description');
+        
+        console.log(`[bundle-entry] Parsing attributes for element ${index + 1}:`, { id, title, description });
+        
+        if (!id || !title || !description) {
+          console.warn(`[bundle-entry] Element ${index + 1} missing required attributes (id, title, description)`);
+          return; // Skip if required attributes are missing
+        }
+        
+        projectData = {
+          id,
+          title,
+          description,
+          tags: [],
+        };
+        
+        // Optional fields
+        const imageUrl = element.getAttribute('image-url');
+        if (imageUrl) projectData.imageUrl = imageUrl;
+        
+        const liveUrl = element.getAttribute('live-url');
+        if (liveUrl) projectData.liveUrl = liveUrl;
+        
+        const githubUrl = element.getAttribute('github-url');
+        if (githubUrl) projectData.githubUrl = githubUrl;
+        
+        const descriptionUrl = element.getAttribute('description-url');
+        if (descriptionUrl) projectData.descriptionUrl = descriptionUrl;
+        
+        const readmeUrl = element.getAttribute('readme-url');
+        if (readmeUrl) projectData.readmeUrl = readmeUrl;
+        
+        const template = element.getAttribute('template');
+        if (template) projectData.template = template;
+        
+        const startDate = element.getAttribute('start-date');
+        if (startDate) projectData.startDate = startDate;
+        
+        const endDate = element.getAttribute('end-date');
+        if (endDate) projectData.endDate = endDate;
+        
+        // Tags
+        const tagsAttr = element.getAttribute('tags');
+        if (tagsAttr) {
+          projectData.tags = tagsAttr.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        }
+        
+        // Boolean
+        projectData.featured = element.hasAttribute('featured');
+        
+        // Numbers
+        const hoursWorked = element.getAttribute('hours-worked');
+        if (hoursWorked) {
+          const num = parseFloat(hoursWorked);
+          if (!isNaN(num)) projectData.hoursWorked = num;
+        }
+        
+        const contributors = element.getAttribute('contributors');
+        if (contributors) {
+          const num = parseInt(contributors, 10);
+          if (!isNaN(num)) projectData.contributors = num;
+        }
+        
+        const rating = element.getAttribute('rating');
+        if (rating) {
+          const num = parseFloat(rating);
+          if (!isNaN(num)) projectData.rating = num;
+        }
+        
+        const preferredIndex = element.getAttribute('preferred-index');
+        if (preferredIndex) {
+          const num = parseInt(preferredIndex, 10);
+          if (!isNaN(num)) projectData.preferredIndex = num;
+        }
+        
+        console.log(`[bundle-entry] Parsed projectData from attributes for element ${index + 1}:`, projectData);
+      }
+      
+      if (projectData) {
+        projects.push(projectData);
+        console.log('[bundle-entry] Added project from folio-project element:', projectData.id, projectData);
+      } else {
+        console.warn(`[bundle-entry] Failed to get projectData for element ${index + 1}`);
+      }
+    });
+    
+    const projectsFromElements = projects.length;
+    console.log('[bundle-entry] Total projects from folio-project elements:', projectsFromElements);
+  } catch (e) {
+    console.error('[bundle-entry] Error querying folio-project elements:', e);
+  }
+  
+  console.log('[bundle-entry] parseCustomProjects: COMPLETE - Total custom projects parsed:', projects.length, projects);
+  return projects;
+}
+
+/**
  * Parse configuration from script tag
  * Supports both query parameters and data attributes
  */
@@ -99,6 +470,8 @@ function parseConfig(): {
   basePath: string;
   theme?: 'light' | 'dark';
   background?: string;
+  customProjects?: any[];
+  customBioStats?: any[];
 } {
   const script = findBundleScript();
   
@@ -238,6 +611,17 @@ function parseConfig(): {
   // Process username special keywords
   githubUsername = processUsername(githubUsername);
   
+  // Parse custom projects from HTML
+  console.log('[bundle-entry] parseConfig: About to parse custom projects');
+  const customProjects = parseCustomProjects();
+  console.log('[bundle-entry] parseConfig: Parsed custom projects:', {
+    count: customProjects.length,
+    projects: customProjects,
+  });
+  
+  // Parse custom bio stats from HTML
+  const customBioStats = parseCustomBioStats();
+  
   return {
     shouldInit,
     githubUsername,
@@ -245,6 +629,8 @@ function parseConfig(): {
     basePath,
     theme,
     background,
+    customProjects: customProjects.length > 0 ? customProjects : undefined,
+    customBioStats,
   };
 }
 
@@ -374,6 +760,8 @@ function renderApp(container: HTMLElement, config: ReturnType<typeof parseConfig
         githubToken={config.githubToken}
         basePath={config.basePath}
         theme={themeConfig}
+        customProjects={config.customProjects}
+        customBioStats={config.customBioStats}
       />
     </React.StrictMode>
   );
@@ -384,7 +772,46 @@ function renderApp(container: HTMLElement, config: ReturnType<typeof parseConfig
     basePath: config.basePath,
     theme: config.theme,
     background: config.background ? '***' : undefined,
+    customProjectsCount: config.customProjects?.length || 0,
+    customProjects: config.customProjects,
   });
+}
+
+// Store script content immediately when script loads (before it executes)
+// This is needed because browsers may clear innerHTML/textContent when script has src
+// We use DOMContentLoaded to capture content as early as possible
+if (typeof document !== 'undefined') {
+  function captureScriptContent() {
+    // Find all script tags and capture their content
+    const scripts = document.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      const script = scripts[i];
+      const src = script.src;
+      if (src && (src.includes('folio.bundle.js') || src.includes('folio.bundle'))) {
+        // Store the innerHTML before the script executes
+        const content = script.innerHTML?.trim() || script.textContent?.trim();
+        if (content) {
+          (window as any).__FOLIO_SCRIPT_CONTENT__ = content;
+          console.log('[bundle-entry] Captured script content:', content.substring(0, 100));
+        }
+        break;
+      }
+    }
+  }
+  
+  // Try to capture immediately
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', captureScriptContent);
+  } else {
+    // DOM already loaded, capture immediately
+    captureScriptContent();
+  }
+}
+
+// Register custom element as early as possible (before DOM ready)
+// This allows <folio-project> elements to be used in HTML
+if (typeof window !== 'undefined' && typeof customElements !== 'undefined') {
+  registerFolioProjectElement();
 }
 
 // Apply background immediately if available (before DOM ready)
@@ -420,4 +847,6 @@ waitForDOM(initializeApp);
 // Export for manual initialization if needed
 export { BundleApp };
 export default BundleApp;
+
+
 
