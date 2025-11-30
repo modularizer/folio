@@ -248,7 +248,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({
     const config = defaultCardConfigs[layoutMode];
     const targetGap = config.targetGap ?? 20;
     const padding = 40;
-    const availableWidth = screenWidth - padding - 5; // Subtract 5px to account for borders and spacing
+    const availableWidth = screenWidth - padding - 5 - 20; // Subtract 5px to account for borders and spacing, plus 20px for margin
 
     const minWidth = config.minWidth;
     const maxWidth = config.maxWidth;

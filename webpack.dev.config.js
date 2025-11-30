@@ -81,6 +81,12 @@ module.exports = {
     }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
+      ...Object.keys(process.env)
+        .filter(key => key.startsWith('EXPO_PUBLIC_') || key.startsWith('REACT_APP_'))
+        .reduce((acc, key) => {
+          acc[`process.env.${key}`] = JSON.stringify(process.env[key]);
+          return acc;
+        }, {}),
       'process.platform': JSON.stringify('browser'),
       'process.version': JSON.stringify(''),
       __DEV__: true,

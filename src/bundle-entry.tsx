@@ -3,10 +3,11 @@
  * 
  * Auto-initializes the app when loaded via script tag with init=true parameter or data-init="true" attribute.
  * 
- * Supports configuration via:
- * - Query parameters: ?username=modularizer&init=true&token=...&theme=dark&background=...
- * - Data attributes: data-username="modularizer" data-init="true" data-token="..." data-theme="dark" data-background="..."
+ * Supports configuration via (in priority order, highest first):
  * - URL query params (page-level): ?theme=light&background=assets/image.png
+ * - Script tag query parameters: ?username=modularizer&init=true&token=...&theme=dark&background=...
+ * - Data attributes: data-username="modularizer" data-init="true" data-token="..." data-theme="dark" data-background="..."
+ * - Environment variables: EXPO_PUBLIC_FOLIO_BACKGROUND, EXPO_PUBLIC_FOLIO_THEME, etc.
  * 
  * Theme options:
  * - data-theme="light" or data-theme="dark" (or ?theme=light/dark)
@@ -198,6 +199,42 @@ function parseConfig(): {
     // Ignore errors parsing URL
   }
   
+  // Check environment variables (lowest priority, only if not set via other methods)
+  // Support both EXPO_PUBLIC_ and REACT_APP_ prefixes for compatibility
+  // Note: webpack DefinePlugin replaces process.env.VAR_NAME with the actual string value at build time
+  if (theme === undefined) {
+    // @ts-ignore - webpack DefinePlugin replaces these at build time
+    const envTheme = (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_FOLIO_THEME) 
+      || (typeof process !== 'undefined' && process.env?.REACT_APP_FOLIO_THEME);
+    if (envTheme === 'light' || envTheme === 'dark') {
+      theme = envTheme;
+    }
+  }
+  if (background === undefined) {
+    // @ts-ignore - webpack DefinePlugin replaces these at build time
+    const envBackground = (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_FOLIO_BACKGROUND)
+      || (typeof process !== 'undefined' && process.env?.REACT_APP_FOLIO_BACKGROUND);
+    if (envBackground) {
+      background = envBackground;
+    }
+  }
+  if (githubUsername === undefined) {
+    // @ts-ignore - webpack DefinePlugin replaces these at build time
+    const envUsername = (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_GITHUB_USERNAME)
+      || (typeof process !== 'undefined' && process.env?.REACT_APP_GITHUB_USERNAME);
+    if (envUsername) {
+      githubUsername = envUsername;
+    }
+  }
+  if (githubToken === undefined) {
+    // @ts-ignore - webpack DefinePlugin replaces these at build time
+    const envToken = (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_GITHUB_TOKEN)
+      || (typeof process !== 'undefined' && process.env?.REACT_APP_GITHUB_TOKEN);
+    if (envToken) {
+      githubToken = envToken;
+    }
+  }
+  
   // Process username special keywords
   githubUsername = processUsername(githubUsername);
   
@@ -383,3 +420,4 @@ waitForDOM(initializeApp);
 // Export for manual initialization if needed
 export { BundleApp };
 export default BundleApp;
+

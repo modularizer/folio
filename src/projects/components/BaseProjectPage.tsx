@@ -508,12 +508,12 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
   const styles = StyleSheet.create({
     wrapper: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
       position: 'relative',
     },
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
     },
     scrollContent: {
       paddingTop: isWide ? 28 : 40,
@@ -524,7 +524,7 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
     page: {
       width: '100%',
       maxWidth: 920,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(0, 0, 0, 0.65)',
       borderRadius: 20,
       padding: screenWidth > 600 ? 32 : 20,
     },
@@ -828,7 +828,7 @@ export const BaseProjectPage: React.FC<BaseProjectPageProps> = ({
             </View>
             )}
             {hasCommitHistory && (
-              <View style={{ marginTop: infoItems.length > 0 ? 24 : 0 }}>
+              <View style={{ marginTop: infoItems.length > 0 ? 24 : 0, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
                 <CommitActivityChart
                   data={commitChartData.map(entry => ({
                     bucket: entry.bucket,

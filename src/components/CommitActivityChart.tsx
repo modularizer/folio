@@ -99,9 +99,15 @@ export const CommitActivityChart: React.FC<CommitActivityChartProps> = ({
   const totalGradientId = `${gradientIdRef.current}-total`;
   const screenWidth = Dimensions.get('window').width;
   const isWide = screenWidth > 980;
-  const chartWidth = Math.min(screenWidth - (isWide ? 64 : 40), 920);
+  // Calculate chart width to fit within the parent container
+  // The parent container has maxWidth: 920 and padding: 32 (or 20 on mobile)
+  // Account for the page container's padding and the section's available width
+  const pageMaxWidth = 920;
+  const pagePadding = isWide ? 32 : 20;
+  const availableWidth = pageMaxWidth - (pagePadding * 2);
+  const chartWidth = Math.min(screenWidth - (isWide ? 64 : 40), availableWidth);
   const padding = { top: 30, right: 20, bottom: 30, left: 40 }; // Increased left for y-axis label, bottom for x-axis
-  const graphWidth = chartWidth - padding.left - padding.right;
+  const graphWidth = Math.max(0, chartWidth - padding.left - padding.right);
   const graphHeight = height - padding.top - padding.bottom;
 
   const chartData = useMemo(() => {
@@ -246,21 +252,24 @@ export const CommitActivityChart: React.FC<CommitActivityChartProps> = ({
 
   const styles = StyleSheet.create({
     container: {
-      width: chartWidth,
+      width: '100%',
+      maxWidth: chartWidth,
+      alignSelf: 'center',
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: 16,
       padding: 12,
       paddingBottom: 12,
       backgroundColor: theme.colors.surface,
+      overflow: 'hidden',
     },
     svgContainer: {
-      width: chartWidth - 24,
+      width: '100%',
       height: height,
       position: 'relative',
     },
     labelsContainer: {
-      width: chartWidth - 24,
+      width: '100%',
       height: 18,
       marginTop: -4, // Move labels closer to the graph
       position: 'relative',
@@ -368,6 +377,7 @@ export const CommitActivityChart: React.FC<CommitActivityChartProps> = ({
     },
   });
 
+  // Calculate SVG width based on container width minus padding
   const svgWidth = chartWidth - 24;
 
   return (

@@ -370,8 +370,8 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
       right: 0,
       zIndex: 999,
       backgroundColor: 'transparent',
-      paddingHorizontal: screenWidth > 768 ? 40 : 20,
-      paddingRight: 5,
+      paddingLeft: screenWidth > 768 ? 30 : 10,
+      paddingRight: screenWidth > 768 ? 20 : 10,
       paddingTop: 20, // Reduced from 20
       paddingBottom: 10, // Reduced from 15
       marginTop: -10, // Reduced from 20, so -10px total (30px less)
@@ -390,7 +390,8 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
       alignSelf: 'stretch',
     },
     projectsSection: {
-      paddingHorizontal: screenWidth > 768 ? 40 : 20,
+      paddingLeft: screenWidth > 768 ? 30 : 10,
+      paddingRight: screenWidth > 768 ? 50 : 30,
       paddingTop: 40, // Add space above projects grid to prevent cards from being cut off
       paddingBottom: 300, // Extra space at end to see background image
       overflow: 'visible', // Ensure cards aren't clipped
@@ -503,7 +504,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
               >
                 {/* Search - on the left */}
                 {onSearchChange && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.background, borderRadius: 8, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, height: 36, width: screenWidth > 768 ? 300 : undefined, minWidth: 200, flex: screenWidth > 768 ? 0 : 1, maxWidth: 300 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.background, borderRadius: 8, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, height: 36, width: screenWidth > 768 ? 300 : undefined, minWidth: 200, flex: screenWidth > 768 ? 0 : 1, maxWidth: 300, marginLeft: -10 }}>
                     <Ionicons name="search" size={18} color={theme.colors.textSecondary} style={{ marginRight: 8 }} />
                     <TextInput
                       style={{ flex: 1, height: '100%', paddingVertical: 8, fontSize: 14, color: theme.colors.text }}
@@ -593,7 +594,7 @@ export const UserPortfolioPage: React.FC<UserPortfolioPageProps> = ({
                   </>
                 )}
                 
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0, marginLeft: 'auto' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0, marginLeft: 'auto', marginRight: 10 }}>
                   <LayoutToggle singleIcon={screenWidth < 768} />
                 </View>
               </View>

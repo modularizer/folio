@@ -1,6 +1,27 @@
 const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
+
+// Collect environment variables that should be exposed to the bundle
+function getEnvVars() {
+  const envVars = {};
+  // Load from .env file if it exists
+  try {
+    require('dotenv').config();
+  } catch (e) {
+    // dotenv not available or .env doesn't exist, continue
+  }
+  
+  // Expose all EXPO_PUBLIC_* and REACT_APP_* variables
+  Object.keys(process.env).forEach(key => {
+    if (key.startsWith('EXPO_PUBLIC_') || key.startsWith('REACT_APP_')) {
+      envVars[key] = JSON.stringify(process.env[key]);
+    }
+  });
+  
+  return envVars;
+}
 
 module.exports = {
   mode: 'production',
@@ -81,9 +102,21 @@ module.exports = {
     ],
   },
   plugins: [
+    new Dotenv({
+      path: './.env',
+      safe: false,
+      systemvars: true,
+      silent: true, // Don't warn if .env is missing
+      defaults: false,
+    }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production'),
-      'process.env': JSON.stringify({}),
+      ...Object.keys(process.env)
+        .filter(key => key.startsWith('EXPO_PUBLIC_') || key.startsWith('REACT_APP_'))
+        .reduce((acc, key) => {
+          acc[`process.env.${key}`] = JSON.stringify(process.env[key]);
+          return acc;
+        }, {}),
       'process.platform': JSON.stringify('browser'),
       'process.version': JSON.stringify(''),
       __DEV__: false,

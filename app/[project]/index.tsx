@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { BackgroundWrapper } from '@/components/BackgroundWrapper';
@@ -53,7 +53,7 @@ export default function ProjectDetailScreen() {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: 'transparent',
     },
     errorContainer: {
       flex: 1,
@@ -98,6 +98,17 @@ export default function ProjectDetailScreen() {
   // Use the project's builder to render the detail page
   const detailPage = project.builder.buildDetailPage(project.data, handleBack);
 
+  // On web, the background is set on the body element, so we don't need BackgroundWrapper
+  // Just render the content with transparent background
+  if (typeof window !== 'undefined' && Platform.OS === 'web') {
+    return (
+      <View style={styles.container}>
+        {detailPage}
+      </View>
+    );
+  }
+
+  // For native platforms, use BackgroundWrapper
   return (
     <BackgroundWrapper 
       background={theme.background} 
