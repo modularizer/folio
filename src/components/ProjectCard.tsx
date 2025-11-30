@@ -3,7 +3,7 @@ import { Project } from '@/projects/types';
 import { useCardLayout } from '@/contexts/CardLayoutContext';
 import { getProjectSlug } from '@/utils/slug';
 import { cacheProjectData } from '@/utils/projectCache';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 
 interface ProjectCardProps {
   project: Project;
@@ -18,6 +18,7 @@ interface ProjectCardProps {
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const { layoutMode } = useCardLayout();
   const router = useRouter();
+  const pathname = usePathname();
 
   const slug = getProjectSlug(project.data);
 
@@ -26,9 +27,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   }, [project.data]);
 
   const handlePress = useCallback(() => {
-    // Use relative navigation - append to current path
-    router.push(`./${slug}`);
-  }, [slug, router]);
+    // Check if we're on a username route (starts with @)
+    // If so, construct the full path to preserve the username in the URL
+    const currentPath = pathname || '/';
+    const pathParts = currentPath.split('/').filter(p => p);
+    
+    // If we're on a username route (e.g., /@modularizer), append the project slug
+    // Otherwise, use relative navigation
+    if (pathParts.length > 0 && pathParts[0].startsWith('@')) {
+      // We're on a username route, construct full path: /@username/project
+      router.push(`/${pathParts[0]}/${slug}`);
+    } else {
+      // Use relative navigation - append to current path
+      router.push(`./${slug}`);
+    }
+  }, [slug, router, pathname]);
 
   // Memoize the card to prevent re-renders when props haven't changed
   const card = useMemo(() => {

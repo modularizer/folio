@@ -16,7 +16,10 @@ import { GitHubUserPage } from '@/components';
 export default function GitHubUserRoute() {
   const { username } = useLocalSearchParams<{ username: string }>();
 
+  console.log('[GitHubUserRoute] Received params:', { username });
+
   if (!username) {
+    console.warn('[GitHubUserRoute] No username found in params, returning null');
     return null;
   }
 

@@ -36,32 +36,47 @@ function AppRouter() {
     console.log('[BundleApp] Route changed:', { pathname, segments });
   }, [pathname, segments]);
 
+  console.log('[AppRouter] Evaluating route:', { 
+    pathname, 
+    segments, 
+    segmentsLength: segments.length,
+    firstSegment: segments[0],
+    startsWithAt: segments[0]?.startsWith('@')
+  });
+
   // Route: / - Home screen
   if (segments.length === 0) {
+    console.log('[AppRouter] Matched: Home screen');
     return <HomeScreen />;
   }
 
   // Route: /github/:username - GitHub user screen
   if (segments.length === 2 && segments[0] === 'github') {
+    console.log('[AppRouter] Matched: /github/:username -> GitHubUserRoute');
     return <GitHubUserRoute />;
   }
 
   // Route: /@username - Shorthand for GitHub user (starts with @)
   if (segments.length === 1 && segments[0].startsWith('@')) {
+    console.log('[AppRouter] Matched: /@username -> GitHubUserRoute, username:', segments[0].slice(1));
     return <GitHubUserRoute />;
   }
 
   // Route: /@username/:project - Specific user's project
   if (segments.length === 2 && segments[0].startsWith('@')) {
+    console.log('[AppRouter] Matched: /@username/:project -> ProjectDetailScreen');
     return <ProjectDetailScreen />;
   }
 
   // Route: /:project - Default user's project (single segment, doesn't start with @)
-  if (segments.length === 1) {
+  // IMPORTANT: This must come AFTER the @username check to avoid matching /@username
+  if (segments.length === 1 && !segments[0].startsWith('@')) {
+    console.log('[AppRouter] Matched: /:project -> ProjectDetailScreen, project:', segments[0]);
     return <ProjectDetailScreen />;
   }
 
   // Fallback - render home
+  console.log('[AppRouter] No match, falling back to Home screen');
   return <HomeScreen />;
 }
 

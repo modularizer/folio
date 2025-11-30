@@ -7,6 +7,7 @@ import { storageManager } from '@/storage';
 import { Project } from '@/projects/types';
 import { getCachedProjectDataBySlug } from '@/utils/projectCache';
 import { getBuilderForProject } from '@/projects/builders';
+import { GitHubUserPage } from '@/components';
 
 export default function ProjectDetailScreen() {
   const { project: projectSlug } = useLocalSearchParams<{ project: string }>();
@@ -14,6 +15,14 @@ export default function ProjectDetailScreen() {
   const { theme } = useTheme();
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+
+  // If the "project" parameter starts with @, it's actually a username route
+  // Redirect to GitHub user page
+  if (projectSlug && projectSlug.startsWith('@')) {
+    const username = projectSlug.slice(1); // Remove @
+    console.log('[ProjectDetailScreen] Detected @username route, redirecting to GitHub user page:', username);
+    return <GitHubUserPage username={username} />;
+  }
 
   useEffect(() => {
     const loadProject = async () => {

@@ -151,13 +151,17 @@ function parseRoute(): RouteMatch {
   
   const parts = pathname.split('/').filter(p => p);
 
+  console.log('[parseRoute] Parsing route:', { rawPathname, pathname, parts });
+
   // / - home
   if (parts.length === 0) {
+    console.log('[parseRoute] Matched: / (home)');
     return { path: '/', params: {}, searchParams };
   }
 
   // /github/:username - GitHub user route
   if (parts.length === 2 && parts[0] === 'github') {
+    console.log('[parseRoute] Matched: /github/:username, username:', parts[1]);
     return {
       path: '/github/:username',
       params: { username: parts[1] },
@@ -167,15 +171,18 @@ function parseRoute(): RouteMatch {
 
   // /@username - shorthand for GitHub user
   if (parts.length === 1 && parts[0].startsWith('@')) {
+    const username = parts[0].slice(1);
+    console.log('[parseRoute] Matched: /@:username, username:', username);
     return { 
       path: '/@:username', 
-      params: { username: parts[0].slice(1) }, // Remove @
+      params: { username }, // Remove @
       searchParams
     };
   }
 
   // /@username/:project - specific user's project
   if (parts.length === 2 && parts[0].startsWith('@')) {
+    console.log('[parseRoute] Matched: /@:username/:project, username:', parts[0].slice(1), 'project:', parts[1]);
     return { 
       path: '/@:username/:project', 
       params: { 
@@ -187,7 +194,9 @@ function parseRoute(): RouteMatch {
   }
 
   // /:project - default user's project (must be last as it matches any single segment)
-  if (parts.length === 1) {
+  // IMPORTANT: Exclude segments starting with @ to avoid matching /@username
+  if (parts.length === 1 && !parts[0].startsWith('@')) {
+    console.log('[parseRoute] Matched: /:project, project:', parts[0]);
     return { 
       path: '/:project', 
       params: { project: parts[0] },
@@ -196,6 +205,7 @@ function parseRoute(): RouteMatch {
   }
 
   // Fallback for other patterns
+  console.log('[parseRoute] No match, fallback to pathname:', pathname);
   return { path: pathname, params: {}, searchParams };
 }
 
